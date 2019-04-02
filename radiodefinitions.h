@@ -19,7 +19,7 @@ namespace Radio {
     };
 
     //Track Stuff
-    enum TrackType { PSA, ID, SONG };
+    enum TrackType { PSA, ID, SONG, EVENT };
 
     struct Track {
       QUrl path;

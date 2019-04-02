@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QObject>
+#include <QListWidget>
 
 #include <radiodefinitions.h>
 
@@ -11,15 +12,17 @@ using namespace Radio;
 class EventHandler
 {
 public:
-    EventHandler();
+    EventHandler(QListWidget *lW);
     void addEvent();
     void addEventRule(shared_ptr<Track> track, QDateTime dateTime);
     void checkForEventConflicts();
     void addEventRule(shared_ptr<Track> track, QList<QTime> times, QDate firstDate, QDate lastDate, QBitArray daysOfTheWeek);
     std::unique_ptr<QList<RadioEvent_Instance> > generate_DailyEventSchedule(QDate dayToGenerateFor, QTime generateAfter = QTime(0,0));
+
 public slots:
 
 private:
+    QListWidget *listWidget;
     //std::map<int, bool> eventPriority;
 };
 

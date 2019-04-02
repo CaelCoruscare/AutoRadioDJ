@@ -7,7 +7,7 @@
 
 using namespace std;
 
-TrackIO::TrackIO(MainWindow *mW, QListWidget *lW_PSA, QListWidget *lW_Song, QListWidget *lW_ID)
+TrackIO::TrackIO(MainWindow *mW, QListWidget *lW_PSA, QListWidget *lW_Song, QListWidget *lW_ID, QListWidget *lW_Event)
 {
     mainWindow = mW;
     listWidget_PSA = lW_PSA;
@@ -51,7 +51,7 @@ QDataStream &operator>>(QDataStream& stream, RadioEvent_Rule_OneShot& rule){
     return stream;
 }
 
-void TrackIO::open(TrackType type)
+QList<QUrl> TrackIO::open()
 {
 
     QFileDialog fileDialog(mainWindow);
@@ -65,7 +65,11 @@ void TrackIO::open(TrackType type)
     }
     fileDialog.setDirectory(QStandardPaths::standardLocations(QStandardPaths::MusicLocation).value(0, QDir::homePath()));
     if (fileDialog.exec() == QDialog::Accepted)
-        addToList(type, fileDialog.selectedUrls());
+        return fileDialog.selectedUrls();
+    else {
+        return QList<QUrl>();
+    }
+
 }
 
 void TrackIO::addToList(TrackType type, const QList<QUrl> &urls)

@@ -60,9 +60,16 @@
           </layout>
          </item>
          <item>
-          <widget class="QPushButton" name="pushButton_TempTest">
+          <widget class="QPushButton" name="pushButton_PlaylistTest">
            <property name="text">
-            <string>TempTest</string>
+            <string>MakePlaylistTest</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pushButton_EventTest">
+           <property name="text">
+            <string>MakeEventListTest</string>
            </property>
           </widget>
          </item>
@@ -76,7 +83,7 @@
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_6">
          <item>
-          <widget class="QScrollArea" name="scrollArea_5">
+          <widget class="QScrollArea" name="scrollArea_Upcoming">
            <property name="widgetResizable">
             <bool>true</bool>
            </property>
@@ -86,7 +93,7 @@
               <x>0</x>
               <y>0</y>
               <width>254</width>
-              <height>436</height>
+              <height>405</height>
              </rect>
             </property>
            </widget>
@@ -118,7 +125,7 @@
                 <x>0</x>
                 <y>0</y>
                 <width>250</width>
-                <height>201</height>
+                <height>181</height>
                </rect>
               </property>
              </widget>
@@ -187,7 +194,7 @@
                 <x>0</x>
                 <y>0</y>
                 <width>251</width>
-                <height>201</height>
+                <height>181</height>
                </rect>
               </property>
              </widget>
@@ -256,7 +263,7 @@
                 <x>0</x>
                 <y>0</y>
                 <width>250</width>
-                <height>201</height>
+                <height>181</height>
                </rect>
               </property>
              </widget>
@@ -319,7 +326,7 @@
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_4">
            <item>
-            <widget class="QScrollArea" name="scrollArea_4">
+            <widget class="QScrollArea" name="scrollArea_Events">
              <property name="widgetResizable">
               <bool>true</bool>
              </property>
@@ -329,7 +336,7 @@
                 <x>0</x>
                 <y>0</y>
                 <width>433</width>
-                <height>221</height>
+                <height>241</height>
                </rect>
               </property>
              </widget>
@@ -351,7 +358,7 @@
               </spacer>
              </item>
              <item>
-              <widget class="QPushButton" name="pushButton_8">
+              <widget class="QPushButton" name="pushButton_DeleteEvents">
                <property name="minimumSize">
                 <size>
                  <width>124</width>
@@ -406,10 +413,10 @@
               </widget>
              </item>
              <item>
-              <widget class="QLineEdit" name="lineEdit"/>
+              <widget class="QLineEdit" name="lineEdit_EventFilename"/>
              </item>
              <item>
-              <widget class="QPushButton" name="pushButton_9">
+              <widget class="QPushButton" name="pushButton_Event_FileBrowse">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                  <horstretch>0</horstretch>
@@ -422,19 +429,6 @@
               </widget>
              </item>
             </layout>
-           </item>
-           <item>
-            <spacer name="verticalSpacer_4">
-             <property name="orientation">
-              <enum>Qt::Vertical</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>20</width>
-               <height>13</height>
-              </size>
-             </property>
-            </spacer>
            </item>
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_7">
@@ -452,10 +446,10 @@
               </widget>
              </item>
              <item>
-              <widget class="QTimeEdit" name="timeEdit"/>
+              <widget class="QTimeEdit" name="timeEdit_Event"/>
              </item>
              <item>
-              <widget class="QDateEdit" name="dateEdit"/>
+              <widget class="QDateEdit" name="dateEdit_Event"/>
              </item>
              <item>
               <spacer name="horizontalSpacer_5">
@@ -480,7 +474,7 @@
              <property name="sizeHint" stdset="0">
               <size>
                <width>20</width>
-               <height>13</height>
+               <height>8</height>
               </size>
              </property>
             </spacer>
@@ -504,7 +498,7 @@
               </spacer>
              </item>
              <item>
-              <widget class="QCheckBox" name="checkBox">
+              <widget class="QCheckBox" name="checkBox_RepeatDaily">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                  <horstretch>0</horstretch>
@@ -539,7 +533,7 @@
              <property name="sizeHint" stdset="0">
               <size>
                <width>20</width>
-               <height>13</height>
+               <height>4</height>
               </size>
              </property>
             </spacer>
@@ -563,7 +557,7 @@
               </spacer>
              </item>
              <item>
-              <widget class="QCheckBox" name="checkBox_2">
+              <widget class="QCheckBox" name="checkBox_RepeatWeekly">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                  <horstretch>0</horstretch>
@@ -609,7 +603,7 @@
               </spacer>
              </item>
              <item>
-              <widget class="QRadioButton" name="radioButton">
+              <widget class="QRadioButton" name="radioButton_Sun">
                <property name="enabled">
                 <bool>false</bool>
                </property>
@@ -625,7 +619,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QRadioButton" name="radioButton_2">
+              <widget class="QRadioButton" name="radioButton_Mon">
                <property name="enabled">
                 <bool>false</bool>
                </property>
@@ -641,7 +635,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QRadioButton" name="radioButton_3">
+              <widget class="QRadioButton" name="radioButton_Tue">
                <property name="enabled">
                 <bool>false</bool>
                </property>
@@ -657,7 +651,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QRadioButton" name="radioButton_4">
+              <widget class="QRadioButton" name="radioButton_Wed">
                <property name="enabled">
                 <bool>false</bool>
                </property>
@@ -673,7 +667,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QRadioButton" name="radioButton_5">
+              <widget class="QRadioButton" name="radioButton_Thu">
                <property name="enabled">
                 <bool>false</bool>
                </property>
@@ -689,7 +683,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QRadioButton" name="radioButton_6">
+              <widget class="QRadioButton" name="radioButton_Fri">
                <property name="enabled">
                 <bool>false</bool>
                </property>
@@ -705,7 +699,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QRadioButton" name="radioButton_7">
+              <widget class="QRadioButton" name="radioButton_Sat">
                <property name="enabled">
                 <bool>false</bool>
                </property>
@@ -736,6 +730,75 @@
             </spacer>
            </item>
            <item>
+            <spacer name="verticalSpacer_5">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>2</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_15">
+             <item>
+              <spacer name="horizontalSpacer_15">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeType">
+                <enum>QSizePolicy::Fixed</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>28</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
+              <widget class="QCheckBox" name="checkBox_EventEnd">
+               <property name="text">
+                <string>Repeat Until:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QDateEdit" name="dateEdit_EventEnd"/>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer_14">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <spacer name="verticalSpacer_6">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>8</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
             <layout class="QHBoxLayout" name="horizontalLayout_12">
              <item>
               <spacer name="horizontalSpacer_12">
@@ -754,7 +817,7 @@
               </spacer>
              </item>
              <item>
-              <widget class="QPushButton" name="pushButton_7">
+              <widget class="QPushButton" name="pushButton_AddEvent">
                <property name="minimumSize">
                 <size>
                  <width>40</width>
