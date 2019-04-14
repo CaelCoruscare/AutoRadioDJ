@@ -18,7 +18,7 @@
 
 QVector<QVector<Track>> Radio::sorted_Songs(1, QVector<Track>());
 QVector<QVector<Track>> Radio::sorted_PSAs(1, QVector<Track>());
-QVector<QVector<Track>> Radio::sorted_IDs(1, QVector<Track>());
+QVector<QVector<Track>> Radio::sorted_IDs(25, QVector<Track>());
 
 QVector<RadioEvent_Rule> Radio::eventList_Repeating;
 QVector<RadioEvent_Rule_OneShot> Radio::eventList_OneShots;
@@ -52,14 +52,15 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->scrollArea_Events->setWidget(listWidget_Event);
 
-    //Create the TrackIO Object, to handle File IO.
+    //
+    QListWidget *listWidget_Upcoming = new QListWidget;
+
+    ui->scrollArea_Upcoming->setWidget(listWidget_Upcoming);
+
+    //Create the TrackIO, EventHandler, and PlaylistGenerator objects, and hand them their listwidgets.
     tIO = new TrackIO(this, listWidget_PSA, listWidget_Song, listWidget_ID, listWidget_Event);
-
-
-
     eventHandler = new EventHandler(listWidget_Event);
-
-    playlistGenerator = new PlaylistGenerator();
+    playlistGenerator = new PlaylistGenerator(listWidget_Upcoming);
 
     //playlist = new QMediaPlaylist();
     //connect(playlist, SIGNAL(currentIndexChanged(int)), this, SLOT(handle_SongChange(int)));
@@ -159,7 +160,7 @@ void MainWindow::handleButton_TestEventListGeneration(){
 
 void MainWindow::handleButton_TestPlaylistGeneration(){
     qInfo() << "Yes Sir!";
-    playlistGenerator->generateDaySonglist(QDate::currentDate(), QTime(),eventHandler->generate_DailyEventSchedule(QDate::currentDate()));
+    playlistGenerator->generateDaySonglist(QDate::currentDate(), QTime(0,3),eventHandler->generate_DailyEventSchedule(QDate::currentDate()));
 }
 
 void MainWindow::handleButton_BrowseForEventFile(){

@@ -94,7 +94,7 @@ void TrackIO::addToList(TrackType type, const QList<QUrl> &urls)
                     break;
 
         case ID  : listWidget = listWidget_ID;
-                   list = &sorted_IDs.first();
+                   list = &sorted_IDs.last(); //The last list of IDs holds only IDs that aren't specific to a time.
                    break;
 
         case SONG  : listWidget = listWidget_Song;
@@ -124,7 +124,31 @@ void TrackIO::addToList(TrackType type, const QList<QUrl> &urls)
         //Fill the track struct and append it to the proper track list.
         auto t = Track(url, output.toLongLong());
         qInfo() << "t: " << t.path << " " << t.length;
-        list->append(t);
+
+        //Handle ID Special Case
+        if (type == ID)
+        {
+            bool isNumber;
+            int hour = url.fileName().mid(0,2).toInt(&isNumber);
+            if (!isNumber)
+            {
+                qInfo() << "No number at the front of this ID: " << url.fileName();
+                list->append(t);
+            }
+            else if (hour > 24 || hour < 0)
+            {
+                qInfo() << "Wrong number at the front of this ID!: " << url.fileName();
+                list->append(t);
+            }
+            else {
+                sorted_IDs[hour].append(t);
+            }
+        }
+        //Handle Song/PSA
+        else {
+            list->append(t);
+        }
+
     }
 }
 

@@ -1,8 +1,8 @@
 #include "playlistgenerator.h"
 
-PlaylistGenerator::PlaylistGenerator()
+PlaylistGenerator::PlaylistGenerator(QListWidget *lW)
 {
-
+    listWidget = lW;
 }
 
 QTime PlaylistGenerator::generateDaySonglist(QDate day, QTime startPlaylistAt, std::unique_ptr<QList<RadioEvent_Instance>> eventList)
@@ -19,13 +19,16 @@ QTime PlaylistGenerator::generateDaySonglist(QDate day, QTime startPlaylistAt, s
         if(!sorted_IDs.at(i).length())
         {
             qInfo() << "Oops, sorted_IDs is lacking an ID for the hour: " << i;
-            return QTime();
+            //return QTime();
         }
     }
 
     //Declare important Variables.
     QTime playlistEndsAt = startPlaylistAt;
+    qInfo() << "playlistEndsAt" << playlistEndsAt;
     QTime time_NextID_OrPSA = QTime(startPlaylistAt.hour(), (startPlaylistAt.minute() - 1) + 15 - ((startPlaylistAt.minute() - 1) % 15)); //Midnight station ID and PSA will be handled by exception case below.
+    qInfo() << "time_NextID_OrPSA: " << time_NextID_OrPSA;
+
     bool doSpecialMidnightCase = false;
     bool keepGenerating = true;
 
@@ -38,6 +41,7 @@ QTime PlaylistGenerator::generateDaySonglist(QDate day, QTime startPlaylistAt, s
         //If an event should happen before or at the same time as the next scheduled PSA or ID: Event will be the next target.
         if (!eventList->empty() && (eventList->first().time <= time_NextID_OrPSA))
         {
+            qInfo() << "Found an Event";
             //Calculate when the event will end.
             QTime eventWillEndAt = eventList->first().time.addMSecs(eventList->first().track->length);
 
@@ -63,7 +67,11 @@ QTime PlaylistGenerator::generateDaySonglist(QDate day, QTime startPlaylistAt, s
         {
             //Set Next Target Variables
             nextTarget_TargetTime = (!doSpecialMidnightCase) ? time_NextID_OrPSA : QTime(23,59,59,59);
-            nextTarget = sorted_PSAs.first().first();
+
+            qInfo() << "nextTarget_TargetTime: " << nextTarget_TargetTime;
+
+            nextTarget = getTrack(300000, PSA); //Get the least played PSA that is under 5 minutes.
+
             isEvent = false;
                     //sorted_IDs.at(time_NextID_OrPSA.hour()).at(qrand() % sorted_IDs.at(time_NextID_OrPSA.hour()).size()); //Fetches a random ID from the vector holding IDs for the current hour.
         }
@@ -76,19 +84,34 @@ QTime PlaylistGenerator::generateDaySonglist(QDate day, QTime startPlaylistAt, s
         while (playlistEndsAt < targetWindow_Start)
         {
             //Get a Song that won't end after the target window.
-            timeUntilWindowEnd = nextTarget_TargetTime.msecsSinceStartOfDay() - playlistEndsAt.msecsSinceStartOfDay() + 30000;
             Track songToAdd = getTrack(timeUntilWindowEnd);
 
-            //Add the Song to the playlist and update the counter for when the playlist will end.
+            //Add the Song to the playlist.
+            qInfo() << "Adding Song: " << songToAdd.path.fileName();
             playlist->addMedia(songToAdd.path);
+            //Add the song to the listwidget for upcoming songs.
+            listWidget->addItem(songToAdd.path.fileName());
+
+            //Update the counter for when the playlist will end.
             playlistEndsAt = playlistEndsAt.addMSecs(songToAdd.length);
+            //Update the time until the window end.
+            timeUntilWindowEnd = nextTarget_TargetTime.msecsSinceStartOfDay() - playlistEndsAt.msecsSinceStartOfDay() + 30000;
         }
 
         //Make sure that the playlist ends on the next day, to make things easier for next day's generation.
         if (doSpecialMidnightCase)
         {
-            Track iDToAdd = sorted_IDs.at(time_NextID_OrPSA.hour()).at(qrand() % sorted_IDs.at(time_NextID_OrPSA.hour()).size()); //Fetches a random ID from the vector holding IDs for the current hour.
+            Track iDToAdd;
+            if(!sorted_IDs.at(time_NextID_OrPSA.hour()).length())
+            {
+                iDToAdd = sorted_IDs.at(24).first();
+            } else {
+                iDToAdd = sorted_IDs.at(time_NextID_OrPSA.hour()).at(qrand() % sorted_IDs.at(time_NextID_OrPSA.hour()).size()); //Fetches a random ID from the vector holding IDs for the current hour.
+            }
+
+            qInfo() << "(Midnight) Adding ID: " << iDToAdd.path.fileName();
             playlist->addMedia(iDToAdd.path);
+            listWidget->addItem(iDToAdd.path.fileName());
             playlistEndsAt = playlistEndsAt.addMSecs(iDToAdd.length);
 
             int msecsOfExtraPSAs = 0;
@@ -98,7 +121,9 @@ QTime PlaylistGenerator::generateDaySonglist(QDate day, QTime startPlaylistAt, s
                 Track pSAToAdd = getTrack(90000, PSA);
 
                 //Add the PSA to the playlist and update the counter for when the playlist will end.
+                qInfo() << "(Midnight) Adding PSA: " << pSAToAdd.path.fileName();
                 playlist->addMedia(pSAToAdd.path);
+                listWidget->addItem(pSAToAdd.path.fileName());
                 playlistEndsAt = playlistEndsAt.addMSecs(pSAToAdd.length);
                 msecsOfExtraPSAs += pSAToAdd.length;
             }
@@ -112,7 +137,9 @@ QTime PlaylistGenerator::generateDaySonglist(QDate day, QTime startPlaylistAt, s
             Track pSAToAdd = getTrack(60000, PSA);
 
             //Add the PSA to the playlist and update the counter for when the playlist will end.
+            qInfo() << "Adding PSA: " << pSAToAdd.path.fileName();
             playlist->addMedia(pSAToAdd.path);
+            listWidget->addItem(pSAToAdd.path.fileName());
             playlistEndsAt = playlistEndsAt.addMSecs(pSAToAdd.length);
 
             //Update so the while loop can exit.
@@ -124,8 +151,16 @@ QTime PlaylistGenerator::generateDaySonglist(QDate day, QTime startPlaylistAt, s
         {
             if (nextTarget_TargetTime.minute() == 0 || nextTarget_TargetTime.minute() == 59)
             {
-                Track iDToAdd = sorted_IDs.at(time_NextID_OrPSA.hour()).at(qrand() % sorted_IDs.at(time_NextID_OrPSA.hour()).size()); //Fetches a random ID from the vector holding IDs for the current hour.
+                Track iDToAdd;
+                if(!sorted_IDs.at(time_NextID_OrPSA.hour()).length())
+                {
+                    iDToAdd = sorted_IDs.at(24).first();
+                } else {
+                    iDToAdd = sorted_IDs.at(time_NextID_OrPSA.hour()).at(qrand() % sorted_IDs.at(time_NextID_OrPSA.hour()).size()); //Fetches a random ID from the vector holding IDs for the current hour.
+                }
+                qInfo() << "Adding ID: " << iDToAdd.path.fileName();
                 playlist->addMedia(iDToAdd.path);
+                listWidget->addItem(iDToAdd.path.fileName());
                 playlistEndsAt = playlistEndsAt.addMSecs(iDToAdd.length);
             }
 
@@ -142,12 +177,16 @@ QTime PlaylistGenerator::generateDaySonglist(QDate day, QTime startPlaylistAt, s
         }
 
         //Add the target track to the playlist.
+        qInfo() << "Adding Target (Prob. PSA): " << nextTarget.path.fileName();
         playlist->addMedia(nextTarget.path);
+        listWidget->addItem(nextTarget.path.fileName());
         playlistEndsAt = playlistEndsAt.addMSecs(nextTarget.length);
     }
 
     //Special midnight case
 
+
+    qInfo() << "Made the playlist!";
 
     //return the time that the playlist is expected to end.
     return playlistEndsAt;
@@ -156,7 +195,6 @@ QTime PlaylistGenerator::generateDaySonglist(QDate day, QTime startPlaylistAt, s
 Track PlaylistGenerator::getTrack(int maxLength, TrackType type)
 {
     QVector< QVector< Track> > *sorted_List;
-
     switch(type)
     {
         case PSA  : sorted_List = &sorted_PSAs;
@@ -167,6 +205,9 @@ Track PlaylistGenerator::getTrack(int maxLength, TrackType type)
 
         case SONG  : sorted_List = &sorted_Songs;
                      break;
+
+        case EVENT : qInfo() << "How did 'EVENT' get passed in? The Events are not sorted in a way that is compatible with this method.";
+                    return Track();
     }
 
     //Iterate through the song library and get the track that is less than maxLength, least played, and oldest. Those evaluation criteria are in order of importance.
@@ -198,92 +239,5 @@ Track PlaylistGenerator::getTrack(int maxLength, TrackType type)
     //This is here to catch the case of having no Track in the list that is shorter than maxLength.
     return sorted_List->first().first();
 }
-
-
-/*void PlaylistGenerator::generateHourSonglist(int hour)
-{
-    //Deprecated.
-
-    //In milliseconds.
-    long int playlistDuration = 0;
-    long int oneHour = 3600000;
-    long int fifteenMinutes = 900000;
-    long int twoMinutes = 120000;
-
-
-    //Generate a list of all IDs for the current hour.
-    QList<track> listIDMatchedToHour = QList<track>();
-    for (auto &idTrack : fullList_ID)
-    {
-        if (idTrack.path.fileName().midRef(0, 2).toInt() == hour)
-        {
-            listIDMatchedToHour.append(idTrack);
-        }
-    }
-    //Randomly choose one of the correct IDs, create a new playlist, and add the ID to the start of the playlist.
-    track id = listIDMatchedToHour.at(qrand() % listIDMatchedToHour.size());
-
-    nextPlaylist = new QMediaPlaylist();
-    nextPlaylist->addMedia(id.path);
-    ui->listWidget_SongPlaylist->addItem(id.path.fileName());
-    playlistDuration += id.length;
-
-    //std::shuffle(fullList_PSA.begin(), fullList_PSA.end(), qrand());
-    //std::shuffle(fullList_Song.begin(), fullList_Song.end(), qrand());
-
-    nextPlaylist->addMedia(fullList_PSA[0].path);
-
-    int indexPSA = 1;
-    int indexSong = 0;
-    int countPSA = 1;
-    while(1)
-    {
-        //Handle edge case of PSA or Song being fully iterated through. Should never happen.
-        if (indexPSA == fullList_PSA.length())
-        {
-            indexPSA = 0;
-        }
-        if (indexSong == fullList_Song.length())
-        {
-            indexSong = 0;
-        }
-
-        //If adding the song would make the playlist long enough, add it and stop building the playlist.
-        if((playlistDuration + fullList_Song[indexSong].length) > oneHour)
-        {
-            nextPlaylist->addMedia(fullList_Song[indexSong].path);
-            ui->listWidget_SongPlaylist->addItem(fullList_Song[indexSong].path.fileName());
-            break;
-        }
-
-        //If adding the song would make it more than about 17 minutes since the last PSA, look for a different song.
-        if((playlistDuration + fullList_Song[indexSong].length) > ((fifteenMinutes * countPSA) + twoMinutes))
-        {
-            indexSong++;
-            continue;
-        }
-
-        //If the song would make it more than 15 minutes (but less than 17 b/c of previous if statement) since the last PSA, add this song and a PSA.
-        if((playlistDuration + fullList_Song[indexSong].length) > (fifteenMinutes * countPSA))
-        {
-            nextPlaylist->addMedia(fullList_Song[indexSong].path);
-            nextPlaylist->addMedia(fullList_PSA[indexPSA].path);
-            ui->listWidget_SongPlaylist->addItem(fullList_Song[indexSong].path.fileName());
-            ui->listWidget_SongPlaylist->addItem(fullList_PSA[indexPSA].path.fileName());
-            playlistDuration += fullList_Song[indexSong].length;
-            playlistDuration += fullList_PSA[indexPSA].length;
-            indexSong++;
-            indexPSA++;
-            countPSA++;
-            continue;
-        }
-
-        //Else add a song
-        nextPlaylist->addMedia(fullList_Song[indexSong].path);
-        ui->listWidget_SongPlaylist->addItem(fullList_Song[indexSong].path.fileName());
-        playlistDuration += fullList_Song[indexSong].length;
-        indexSong++;
-    }
-}*/
 
 
