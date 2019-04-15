@@ -44,12 +44,15 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->scrollArea_IDs->setWidget(listWidget_ID);
     ui->scrollArea_PSAs->setWidget(listWidget_PSA);
+
     ui->scrollArea_Songs->setWidget(listWidget_Song);
 
     //Create listWidget to display Events and pass it through to the EventHandler object.
-    QListWidget *listWidget_Event = new QListWidget;
+    QListWidget *listWidget_Event_Repeating = new QListWidget;
+    QListWidget *listWidget_Event_Oneshot = new QListWidget;
 
-    ui->scrollArea_Events->setWidget(listWidget_Event);
+    ui->scrollArea_Events_OneShots->setWidget(listWidget_Event_Oneshot);
+    ui->scrollArea_Events_Repeating->setWidget(listWidget_Event_Repeating);
 
     //
     QListWidget *listWidget_Upcoming = new QListWidget;
@@ -57,8 +60,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->scrollArea_Upcoming->setWidget(listWidget_Upcoming);
 
     //Create the TrackIO, EventHandler, and PlaylistGenerator objects, and hand them their listwidgets.
-    tIO = new TrackIO(this, listWidget_PSA, listWidget_Song, listWidget_ID, listWidget_Event);
-    eventHandler = new EventHandler(listWidget_Event);
+    tIO = new TrackIO(this, listWidget_PSA, listWidget_Song, listWidget_ID, listWidget_Event_Repeating);
+    eventHandler = new EventHandler(listWidget_Event_Repeating, listWidget_Event_Oneshot);
     playlistGenerator = new PlaylistGenerator(listWidget_Upcoming);
 
     //playlist = new QMediaPlaylist();
@@ -84,8 +87,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->checkBox_RepeatWeekly, SIGNAL(stateChanged(int)), this, SLOT(handleCheckbox_Event_Repeat_Weekly(int)));
     connect(ui->checkBox_RepeatDaily, SIGNAL(stateChanged(int)), this, SLOT(handleCheckbox_Event_Repeat_Daily(int)));
 
-    QImage albumPlaceholder;
-    albumPlaceholder.load(":/rec/Resources/Images/album_art.jpeg");
+    connect(listWidget_Event_Repeating, SIGNAL(currentRowChanged(int)), this, SLOT(handleSelected_Event_Repeater(int)));
+
 }
 
 void MainWindow::implement(){
@@ -104,6 +107,7 @@ void MainWindow::handleButton_Event_Add()
 
         //Create the Event
         eventHandler->addEventRule(eventToAdd_Track, dateTime);
+        oneShots.append(eventList_OneShots.last());
     } else {
         //First Date
         QDate firstDate = ui->dateEdit_Event->date();
@@ -135,6 +139,7 @@ void MainWindow::handleButton_Event_Add()
 
         //Create the event
         eventHandler->addEventRule(eventToAdd_Track, *times, firstDate, lastDate, daysOfWeek);
+        repeaters.append(eventList_Repeating.last());
     }
 
     //addEventRule(shared_ptr<Track> track, QDateTime dateTime)
@@ -361,21 +366,136 @@ void MainWindow::handleCheckbox_Event_Repeat_Weekly(int state){
     }
 }
 
+void MainWindow::handleSelected_Event_Repeater(int currentRow){
 
+    if (currentRow == -1)
+    {
+        //Clear Everything.
 
-/*void MainWindow::fillLists()
-{
+        //File
+        ui->lineEdit_EventFilename->setText("");
 
-}*/
+        //First Date
+        ui->dateEdit_Event->setDate(QDateTime::currentDateTime().date());
 
-/*void MainWindow::addToList(TrackType type, QUrl url)
-{
-    QList<QUrl> temp = QList<QUrl>() << url;
-    addToList(type, temp);
-}*/
+        //Last Date
+        ui->checkBox_EventEnd->setCheckState(Qt::Unchecked);
+        ui->dateEdit_EventEnd->setDate(QDateTime::currentDateTime().date());
 
+        //Start Time
+        ui->timeEdit_Event->setTime(QTime(14, 0));
 
+        //Days of week
+        ui->checkBox_RepeatDaily->setCheckState(Qt::Unchecked);
+        ui->checkBox_RepeatWeekly->setCheckState(Qt::Unchecked);
 
+        ui->radioButton_Sun->setChecked(false);
+        ui->radioButton_Mon->setChecked(false);
+        ui->radioButton_Tue->setChecked(false);
+        ui->radioButton_Wed->setChecked(false);
+        ui->radioButton_Thu->setChecked(false);
+        ui->radioButton_Fri->setChecked(false);
+        ui->radioButton_Sat->setChecked(false);
+    }
+
+    RadioEvent_Rule rule = repeaters[currentRow];
+
+    //File
+    ui->lineEdit_EventFilename->setText(rule.track->path.fileName());
+    eventToAdd_Track = rule.track;
+
+    //First Date
+    ui->dateEdit_Event->setDate(rule.firstDate);
+
+    //Last Date
+    if(rule.lastDate == QDate(3000,1,1))
+    {
+        ui->checkBox_EventEnd->setCheckState(Qt::Unchecked);
+        ui->dateEdit_EventEnd->setDate(QDateTime::currentDateTime().date());
+    }
+    else {
+        ui->checkBox_EventEnd->setCheckState(Qt::Checked);
+        ui->dateEdit_EventEnd->setDate(rule.firstDate);
+    }
+
+    //Start Time
+    ui->timeEdit_Event->setTime(rule.times.first());
+
+    //Days of week
+    if(rule.daysOfTheWeek == QBitArray(7, true))
+    {
+        ui->checkBox_RepeatDaily->setCheckState(Qt::Checked);
+        ui->checkBox_RepeatWeekly->setCheckState(Qt::Unchecked);
+
+        ui->radioButton_Sun->setChecked(false);
+        ui->radioButton_Mon->setChecked(false);
+        ui->radioButton_Tue->setChecked(false);
+        ui->radioButton_Wed->setChecked(false);
+        ui->radioButton_Thu->setChecked(false);
+        ui->radioButton_Fri->setChecked(false);
+        ui->radioButton_Sat->setChecked(false);
+    } else {
+        ui->checkBox_RepeatDaily->setCheckState(Qt::Unchecked);
+        ui->checkBox_RepeatWeekly->setCheckState(Qt::Checked);
+
+        ui->radioButton_Sun->setChecked(rule.daysOfTheWeek.testBit(0));
+        ui->radioButton_Mon->setChecked(rule.daysOfTheWeek.testBit(1));
+        ui->radioButton_Tue->setChecked(rule.daysOfTheWeek.testBit(2));
+        ui->radioButton_Wed->setChecked(rule.daysOfTheWeek.testBit(3));
+        ui->radioButton_Thu->setChecked(rule.daysOfTheWeek.testBit(4));
+        ui->radioButton_Fri->setChecked(rule.daysOfTheWeek.testBit(5));
+        ui->radioButton_Sat->setChecked(rule.daysOfTheWeek.testBit(6));
+    }
+
+}
+
+void MainWindow::handleSelected_Event_Oneshot(int currentRow){
+
+    if (currentRow == -1)
+    {
+        //Clear Everything.
+
+        //File
+        ui->lineEdit_EventFilename->setText("");
+
+        //Date
+        ui->dateEdit_Event->setDate(QDateTime::currentDateTime().date());
+
+        //Time
+        ui->timeEdit_Event->setTime(QTime(14, 0));
+
+    }
+
+    RadioEvent_Rule_OneShot rule = oneShots[currentRow];
+
+    //File
+    ui->lineEdit_EventFilename->setText(rule.track->path.fileName());
+    eventToAdd_Track = rule.track;
+
+    //Date
+    ui->dateEdit_Event->setDate(rule.dateTime.date());
+
+    //Time
+    ui->timeEdit_Event->setTime(rule.dateTime.time());
+
+    //Clear Repeater stuff
+    //Last Date
+    ui->checkBox_EventEnd->setCheckState(Qt::Unchecked);
+    ui->dateEdit_EventEnd->setDate(QDateTime::currentDateTime().date());
+
+    //Days of week
+    ui->checkBox_RepeatDaily->setCheckState(Qt::Unchecked);
+    ui->checkBox_RepeatWeekly->setCheckState(Qt::Unchecked);
+
+    ui->radioButton_Sun->setChecked(false);
+    ui->radioButton_Mon->setChecked(false);
+    ui->radioButton_Tue->setChecked(false);
+    ui->radioButton_Wed->setChecked(false);
+    ui->radioButton_Thu->setChecked(false);
+    ui->radioButton_Fri->setChecked(false);
+    ui->radioButton_Sat->setChecked(false);
+
+}
 
 
 MainWindow::~MainWindow(){

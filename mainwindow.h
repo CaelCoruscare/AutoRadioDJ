@@ -51,15 +51,13 @@ public:
 
     void implement();
 
-
-
-
-
-public slots:
 private:
     qint64 position = 0;
     shared_ptr<Track> eventToAdd_Track = nullptr;
     std::unique_ptr<QList<RadioEvent_Instance>> testEventList;
+
+    QList<RadioEvent_Rule_OneShot> oneShots;
+    QList<RadioEvent_Rule> repeaters;
 
 
 private slots:
@@ -73,13 +71,17 @@ private slots:
     void handleButton_ID_Delete();
     void handleButton_Song_Delete();
 
+    void handleButton_Event_Add();
+    void handleSelected_Event_Repeater(int currentRow);
+    void handleSelected_Event_Oneshot(int currentRow);
+
+    void handleCheckbox_Event_Repeat_Daily(int state);
+    void handleCheckbox_Event_Repeat_Weekly(int state);
+
     //void handle_SongChange(int);
     void handle_DurationChanged(qint64 duration);
     void handle_PositionChanged(qint64 pos);
-    void handleButton_Event_Add();
-    void handleCheckbox_Event_Repeat_Daily(int state);
 
-    void handleCheckbox_Event_Repeat_Weekly(int state);
     void handleButton_TestEventListGeneration();
     void handleButton_TestPlaylistGeneration();
 

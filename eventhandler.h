@@ -12,17 +12,19 @@ using namespace Radio;
 class EventHandler
 {
 public:
-    EventHandler(QListWidget *lW);
+    EventHandler(QListWidget *lWR, QListWidget *lWO);
+
     void addEvent();
-    void addEventRule(shared_ptr<Track> track, QDateTime dateTime);
     void checkForEventConflicts();
-    void addEventRule(shared_ptr<Track> track, QList<QTime> times, QDate firstDate, QDate lastDate, QBitArray daysOfTheWeek);
     std::unique_ptr<QList<RadioEvent_Instance> > generate_DailyEventSchedule(QDate dayToGenerateFor, QTime generateAfter = QTime(0,0));
 
+    void addEventRule(shared_ptr<Track> track, QDateTime dateTime);
+    void addEventRule(shared_ptr<Track> track, QList<QTime> times, QDate firstDate, QDate lastDate, QBitArray daysOfTheWeek);
 public slots:
 
 private:
-    QListWidget *listWidget;
+    QListWidget *listWidgetRepeating;
+    QListWidget *listWidgetOneshot;
     //std::map<int, bool> eventPriority;
 };
 

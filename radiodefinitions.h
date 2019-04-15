@@ -92,6 +92,10 @@ namespace Radio {
         {}
     };
 
+    struct RadioEvent_Info {
+
+    };
+
     extern QVector< QVector< Track> > sorted_Songs;
     extern QVector< QVector< Track> > sorted_PSAs;
     extern QVector< QVector< Track> > sorted_IDs; //This one is sorted by hour, not by most played.

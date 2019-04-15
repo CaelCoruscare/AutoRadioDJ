@@ -3,9 +3,10 @@
 #include <QDebug>
 #include <algorithm>
 
-EventHandler::EventHandler(QListWidget *lW)
+EventHandler::EventHandler(QListWidget *lWR, QListWidget *lWO)
 {
-    listWidget = lW;
+    listWidgetRepeating = lWR;
+    listWidgetOneshot = lWO;
 }
 
 std::unique_ptr<QList<RadioEvent_Instance>> EventHandler::generate_DailyEventSchedule(QDate dayToGenerateFor, QTime generateAfter)
@@ -81,7 +82,7 @@ void EventHandler::addEventRule(shared_ptr<Track> track, QDateTime dateTime)
 {
     eventList_OneShots.append(RadioEvent_Rule_OneShot(track, dateTime));
     qInfo() << "trackpathfilename: " << track->path.fileName();
-    listWidget->addItem(track->path.fileName());
+    listWidgetOneshot->addItem(track->path.fileName());
 
 }
 
@@ -89,7 +90,7 @@ void EventHandler::addEventRule(shared_ptr<Track> track, QList<QTime> times, QDa
 {
     eventList_Repeating.append(RadioEvent_Rule(track, times, firstDate, lastDate, daysOfTheWeek));
     qInfo() << "trackpathfilename: " << track->path.fileName();
-    listWidget->addItem(track->path.fileName());
+    listWidgetRepeating->addItem(track->path.fileName());
 }
 
 void EventHandler::checkForEventConflicts()
