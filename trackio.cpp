@@ -74,6 +74,10 @@ QList<QUrl> TrackIO::open()
 
 void TrackIO::addToList(TrackType type, const QList<QUrl> &urls)
 {
+    //Cancel if no file was selected.
+    if (urls.empty())
+        return;
+
     qInfo() << "hi " << urls[0].url();
     //Setup for adding the track to the proper track list and listwidget.
     QListWidget *listWidget;

@@ -38,6 +38,11 @@ public:
     EventHandler *eventHandler;
     PlaylistGenerator *playlistGenerator;
 
+    //Create listwidgets to go in appropriate scroll areas and pass them through to the TrackIO object.
+    QListWidget *listWidget_ID = new QListWidget;
+    QListWidget *listWidget_PSA = new QListWidget;
+    QListWidget *listWidget_Song = new QListWidget;
+
 
     //Player Stuff
 //    QMediaPlayer *player = new QMediaPlayer;
@@ -59,9 +64,15 @@ private:
 
 private slots:
     void handleButton_BrowseForEventFile();
+
     void handleButton_PSA_Add();
     void handleButton_ID_Add();
     void handleButton_Song_Add();
+
+    void handleButton_PSA_Delete();
+    void handleButton_ID_Delete();
+    void handleButton_Song_Delete();
+
     //void handle_SongChange(int);
     void handle_DurationChanged(qint64 duration);
     void handle_PositionChanged(qint64 pos);
@@ -71,8 +82,9 @@ private slots:
     void handleCheckbox_Event_Repeat_Weekly(int state);
     void handleButton_TestEventListGeneration();
     void handleButton_TestPlaylistGeneration();
+
 signals:
 
-  };
+};
 
 #endif // MAINWINDOW_H

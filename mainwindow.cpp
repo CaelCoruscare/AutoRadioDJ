@@ -38,10 +38,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
 
-    //Create listwidgets to go in appropriate scroll areas and pass them through to the TrackIO object.
-    QListWidget *listWidget_ID = new QListWidget;
-    QListWidget *listWidget_PSA = new QListWidget;
-    QListWidget *listWidget_Song = new QListWidget;
+    listWidget_ID->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    listWidget_PSA->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    listWidget_Song->setSelectionMode(QAbstractItemView::ExtendedSelection);
 
     ui->scrollArea_IDs->setWidget(listWidget_ID);
     ui->scrollArea_PSAs->setWidget(listWidget_PSA);
@@ -69,6 +68,10 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->pushButton_ID_Add, SIGNAL(released()), this, SLOT(handleButton_ID_Add()));
     connect(ui->pushButton_Song_Add, SIGNAL(released()), this, SLOT(handleButton_Song_Add()));
 
+    connect(ui->pushButton_PSA_Delete, SIGNAL(released()), this, SLOT(handleButton_PSA_Delete()));
+    connect(ui->pushButton_ID_Delete, SIGNAL(released()), this, SLOT(handleButton_ID_Delete()));
+    connect(ui->pushButton_Song_Delete, SIGNAL(released()), this, SLOT(handleButton_Song_Delete()));
+
     connect(player, SIGNAL(durationChanged(qint64)), this, SLOT(handle_DurationChanged(qint64)));
     connect(player, SIGNAL(positionChanged(qint64)), this, SLOT(handle_PositionChanged(qint64)));
 
@@ -80,7 +83,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(ui->checkBox_RepeatWeekly, SIGNAL(stateChanged(int)), this, SLOT(handleCheckbox_Event_Repeat_Weekly(int)));
     connect(ui->checkBox_RepeatDaily, SIGNAL(stateChanged(int)), this, SLOT(handleCheckbox_Event_Repeat_Daily(int)));
-
 
     QImage albumPlaceholder;
     albumPlaceholder.load(":/rec/Resources/Images/album_art.jpeg");
@@ -117,17 +119,17 @@ void MainWindow::handleButton_Event_Add()
         {
             if(!ui->radioButton_Sun->isChecked())
                 daysOfWeek.clearBit(0);
-            if(ui->radioButton_Mon->isChecked())
+            if(!ui->radioButton_Mon->isChecked())
                 daysOfWeek.clearBit(1);
-            if(ui->radioButton_Tue->isChecked())
+            if(!ui->radioButton_Tue->isChecked())
                 daysOfWeek.clearBit(2);
-            if(ui->radioButton_Wed->isChecked())
+            if(!ui->radioButton_Wed->isChecked())
                 daysOfWeek.clearBit(3);
-            if(ui->radioButton_Thu->isChecked())
+            if(!ui->radioButton_Thu->isChecked())
                 daysOfWeek.clearBit(4);
-            if(ui->radioButton_Fri->isChecked())
+            if(!ui->radioButton_Fri->isChecked())
                 daysOfWeek.clearBit(5);
-            if(ui->radioButton_Sat->isChecked())
+            if(!ui->radioButton_Sat->isChecked())
                 daysOfWeek.clearBit(6);
         }
 
@@ -165,7 +167,13 @@ void MainWindow::handleButton_TestPlaylistGeneration(){
 
 void MainWindow::handleButton_BrowseForEventFile(){
 
-    QUrl url = tIO->open().first();
+    //Fetch the file with a file dialogue.
+    QList<QUrl> eventFiles = tIO->open();
+    //Cancel if no file was selected.
+    if (eventFiles.empty())
+        return;
+    //Ignore all but the first if multiple were selected.
+    QUrl url = eventFiles.first();
 
     ui->lineEdit_EventFilename->setText(url.fileName());
 
@@ -198,14 +206,105 @@ void MainWindow::handleButton_PSA_Add(){
 }
 
 void MainWindow::handleButton_ID_Add(){
+
     tIO->addToList(ID, tIO->open());
 }
 
 void MainWindow::handleButton_Song_Add(){
+
     tIO->addToList(SONG, tIO->open());
 }
 
+void MainWindow::handleButton_PSA_Delete(){
+
+    qInfo() << "Deleting";
+
+    QList<QListWidgetItem *> items = listWidget_PSA->selectedItems();
+
+    qInfo() << items.first()->text();
+
+    for (auto item: items)
+    {
+        //Search sorted_PSAs until a matching file is found.
+        bool found = false;
+        for (auto &list: sorted_PSAs)
+        {
+            for (int i = 0; i < list.length(); i++)
+            {
+                if (!item->text().compare(list.at(i).path.fileName()))
+                {
+                    list.removeAt(i);
+                    found = true;
+                    break;
+                }
+            }
+
+            if (found)
+                break;
+        }
+    }
+
+    qDeleteAll(listWidget_PSA->selectedItems());
+}
+
+void MainWindow::handleButton_ID_Delete(){
+
+    QList<QListWidgetItem *> items = listWidget_ID->selectedItems();
+
+    for (auto item: items)
+    {
+        //Search sorted_IDs until a matching file is found.
+        bool found = false;
+        for (auto list: sorted_IDs)
+        {
+            for (int i = 0; i < list.length(); i++)
+            {
+                if (!item->text().compare(list.at(i).path.fileName()))
+                {
+                    list.removeAt(i);
+                    found = true;
+                    break;
+                }
+            }
+
+            if (found)
+                break;
+        }
+    }
+
+    qDeleteAll(listWidget_ID->selectedItems());
+}
+
+void MainWindow::handleButton_Song_Delete(){
+
+    QList<QListWidgetItem *> items = listWidget_Song->selectedItems();
+
+    for (auto item: items)
+    {
+        //Search sorted_Songs until a matching file is found.
+        bool found = false;
+        for (auto list: sorted_Songs)
+        {
+            for (int i = 0; i < list.length(); i++)
+            {
+                if (!item->text().compare(list.at(i).path.fileName()))
+                {
+                    list.removeAt(i);
+                    found = true;
+                    break;
+                }
+            }
+
+            if (found)
+                break;
+        }
+    }
+
+    qDeleteAll(listWidget_Song->selectedItems());
+}
+
 void MainWindow::handleCheckbox_Event_Repeat_Daily(int state){
+
     //state =
         //0 = unchecked = Qt::Unchecked
         //1 = partially checked and in heirarchy of checkboxes = QT::PartiallyChecked

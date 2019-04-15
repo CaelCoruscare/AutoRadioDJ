@@ -125,7 +125,7 @@
                 <x>0</x>
                 <y>0</y>
                 <width>250</width>
-                <height>198</height>
+                <height>201</height>
                </rect>
               </property>
              </widget>
@@ -147,7 +147,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="pushButton_2">
+              <widget class="QPushButton" name="pushButton_ID_Delete">
                <property name="minimumSize">
                 <size>
                  <width>124</width>
@@ -194,7 +194,7 @@
                 <x>0</x>
                 <y>0</y>
                 <width>251</width>
-                <height>198</height>
+                <height>201</height>
                </rect>
               </property>
              </widget>
@@ -216,7 +216,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="pushButton_4">
+              <widget class="QPushButton" name="pushButton_PSA_Delete">
                <property name="minimumSize">
                 <size>
                  <width>124</width>
@@ -263,7 +263,7 @@
                 <x>0</x>
                 <y>0</y>
                 <width>250</width>
-                <height>198</height>
+                <height>201</height>
                </rect>
               </property>
              </widget>
@@ -285,7 +285,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="pushButton_6">
+              <widget class="QPushButton" name="pushButton_Song_Delete">
                <property name="minimumSize">
                 <size>
                  <width>124</width>
@@ -320,7 +320,7 @@
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_11" stretch="2,1">
         <item>
-         <widget class="QGroupBox" name="groupBox_4">
+         <widget class="QGroupBox" name="groupBox_EventList">
           <property name="title">
            <string>Event List</string>
           </property>
@@ -336,7 +336,7 @@
                 <x>0</x>
                 <y>0</y>
                 <width>433</width>
-                <height>241</height>
+                <height>238</height>
                </rect>
               </property>
              </widget>
@@ -358,7 +358,7 @@
               </spacer>
              </item>
              <item>
-              <widget class="QPushButton" name="pushButton_DeleteEvents">
+              <widget class="QPushButton" name="pushButton_Event_Delete">
                <property name="minimumSize">
                 <size>
                  <width>124</width>
@@ -616,6 +616,9 @@
                <property name="text">
                 <string>S</string>
                </property>
+               <property name="autoExclusive">
+                <bool>false</bool>
+               </property>
               </widget>
              </item>
              <item>
@@ -631,6 +634,9 @@
                </property>
                <property name="text">
                 <string>M</string>
+               </property>
+               <property name="autoExclusive">
+                <bool>false</bool>
                </property>
               </widget>
              </item>
@@ -648,6 +654,9 @@
                <property name="text">
                 <string>T</string>
                </property>
+               <property name="autoExclusive">
+                <bool>false</bool>
+               </property>
               </widget>
              </item>
              <item>
@@ -663,6 +672,9 @@
                </property>
                <property name="text">
                 <string>W</string>
+               </property>
+               <property name="autoExclusive">
+                <bool>false</bool>
                </property>
               </widget>
              </item>
@@ -680,6 +692,9 @@
                <property name="text">
                 <string>T</string>
                </property>
+               <property name="autoExclusive">
+                <bool>false</bool>
+               </property>
               </widget>
              </item>
              <item>
@@ -696,6 +711,9 @@
                <property name="text">
                 <string>F</string>
                </property>
+               <property name="autoExclusive">
+                <bool>false</bool>
+               </property>
               </widget>
              </item>
              <item>
@@ -711,6 +729,9 @@
                </property>
                <property name="text">
                 <string>S</string>
+               </property>
+               <property name="autoExclusive">
+                <bool>false</bool>
                </property>
               </widget>
              </item>
