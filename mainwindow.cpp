@@ -3,6 +3,7 @@
 #include "qimage.h"
 #include "trackio.h"
 #include "radiodefinitions.h"
+#include "deselectableqlistwidget.h"
 
 #include <QMediaPlayer>
 #include <QMediaService>
@@ -33,10 +34,17 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
+    qInfo() << "player: " << player;
     implement();
 
     ui->setupUi(this);
 
+    player->setPlaylist(playlist);
+    player->setVolume(70);
+    player->setAudioRole(QAudio::MusicRole);
+    playlist->setPlaybackMode(QMediaPlaylist::Loop);
+
+    qInfo() << "playbackmode: " << playlist->playbackMode() << " audiorole: " << player->audioRole();
 
     listWidget_ID->setSelectionMode(QAbstractItemView::ExtendedSelection);
     listWidget_PSA->setSelectionMode(QAbstractItemView::ExtendedSelection);
@@ -48,8 +56,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->scrollArea_Songs->setWidget(listWidget_Song);
 
     //Create listWidget to display Events and pass it through to the EventHandler object.
-    QListWidget *listWidget_Event_Repeating = new QListWidget;
-    QListWidget *listWidget_Event_Oneshot = new QListWidget;
+    QListWidget *listWidget_Event_Repeating = new DeselectableQListWidget;
+    QListWidget *listWidget_Event_Oneshot = new DeselectableQListWidget;
 
     ui->scrollArea_Events_OneShots->setWidget(listWidget_Event_Oneshot);
     ui->scrollArea_Events_Repeating->setWidget(listWidget_Event_Repeating);
@@ -78,7 +86,6 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(player, SIGNAL(durationChanged(qint64)), this, SLOT(handle_DurationChanged(qint64)));
     connect(player, SIGNAL(positionChanged(qint64)), this, SLOT(handle_PositionChanged(qint64)));
 
-    connect(ui->pushButton_EventTest, SIGNAL(released()), this, SLOT(handleButton_TestEventListGeneration()));
     connect(ui->pushButton_PlaylistTest, SIGNAL(released()), this, SLOT(handleButton_TestPlaylistGeneration()));
 
     connect(ui->pushButton_Event_FileBrowse, SIGNAL(released()), this, SLOT(handleButton_BrowseForEventFile()));
@@ -88,6 +95,13 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->checkBox_RepeatDaily, SIGNAL(stateChanged(int)), this, SLOT(handleCheckbox_Event_Repeat_Daily(int)));
 
     connect(listWidget_Event_Repeating, SIGNAL(currentRowChanged(int)), this, SLOT(handleSelected_Event_Repeater(int)));
+
+    connect(playlist, SIGNAL(currentIndexChanged(int)), this, SLOT(handle_SongChange(int)));
+
+    qInfo() << "playbackmode: " << playlist->playbackMode() << " audiorole: " << player->audioRole();
+//    player->setPlaylist(playlist);
+//    player->setVolume(70);
+//    playlist->setPlaybackMode(QMediaPlaylist::Loop);
 
 }
 
@@ -146,9 +160,7 @@ void MainWindow::handleButton_Event_Add()
     //addEventRule(shared_ptr<Track> track, QList<QTime> times, QDate firstDate, QDate lastDate, QBitArray daysOfTheWeek)
 }
 
-
-void MainWindow::handle_DurationChanged(qint64 duration)
-{
+void MainWindow::handle_DurationChanged(qint64 duration){
     {
         ui->progressBar_Duration->setValue((position/1000));
     }
@@ -161,13 +173,26 @@ void MainWindow::handle_PositionChanged(qint64 pos)
     position = pos;
 }
 
-void MainWindow::handleButton_TestEventListGeneration(){
-    testEventList = eventHandler->generate_DailyEventSchedule(QDate::currentDate());
-}
-
 void MainWindow::handleButton_TestPlaylistGeneration(){
-    qInfo() << "Yes Sir!";
-    playlistGenerator->generateDaySonglist(QDate::currentDate(), QTime(0,3),eventHandler->generate_DailyEventSchedule(QDate::currentDate()));
+    qInfo() << "Yes Sir! player is: " << player;
+    playlistEndTime = playlistGenerator->generateDaySonglist(QDate::currentDate(), QDateTime::currentDateTime().time(), eventHandler->generate_DailyEventSchedule(QDate::currentDate()));
+    player->play();
+
+    //qInfo() << "Time to play " <<player->playlist()->mediaCount() << "tracks";
+    /*player->setPlaylist(playlist);
+    qInfo() << "1)playing = " << player->state() << " 2)Error: " << player->error() <<  " 3)role: " << player->audioRole() << " 4)current media isNull: "  << player->media().isNull() << " 5)volume: " << player->volume() << " 6)isaudioavailable: " << player->isAudioAvailable() << " 7)ismuted: " << player->isMuted();
+    player->setAudioRole(QAudio::MusicRole);
+    //player->setMedia(playlist);
+    qInfo() << "1)playing = " << player->state() << " 2)Error: " << player->error() <<  " 3)role: " << player->audioRole() << " 4)current media isNull: "  << player->media().isNull() << " 5)volume: " << player->volume() << " 6)isaudioavailable: " << player->isAudioAvailable() << " 7)ismuted: " << player->isMuted();
+    playlist->setCurrentIndex(1);
+    qInfo() << "1)playing = " << player->state() << " 2)Error: " << player->error() <<  " 3)role: " << player->audioRole() << " 4)current media isNull: "  << player->media().isNull() << " 5)volume: " << player->volume() << " 6)isaudioavailable: " << player->isAudioAvailable() << " 7)ismuted: " << player->isMuted();
+    player->setVolume(50);
+    qInfo() << "1)playing = " << player->state() << " 2)Error: " << player->error() <<  " 3)role: " << player->audioRole() << " 4)current media isNull: "  << player->media().isNull() << " 5)volume: " << player->volume() << " 6)isaudioavailable: " << player->isAudioAvailable() << " 7)ismuted: " << player->isMuted();
+    player->play();
+    */
+    qInfo() << "player is: " << player;
+    qInfo() << "1)playing = " << player->state() << " \n2)Error: " << player->error() <<  " \n3)role: " << player->audioRole() << " \n4)current media isNull: "  << player->media().isNull() << " \n5)volume: " << player->volume() << " \n6)isaudioavailable: " << player->isAudioAvailable() << " \n7)ismuted: " << player->isMuted();
+
 }
 
 void MainWindow::handleButton_BrowseForEventFile(){
@@ -497,6 +522,17 @@ void MainWindow::handleSelected_Event_Oneshot(int currentRow){
 
 }
 
+void MainWindow::handle_SongChange(int position){
+
+    qInfo() << "songchange";
+
+    if(QDateTime::currentDateTime().time() > QTime(23,30))
+    {
+        qInfo() << "Time to generate tomorrow's audio!";
+        QDate tomorrow = QDate::currentDate().addDays(1);
+        playlistEndTime = playlistGenerator->generateDaySonglist(tomorrow, playlistEndTime, eventHandler->generate_DailyEventSchedule(tomorrow));
+    }
+}
 
 MainWindow::~MainWindow(){
     delete ui;

@@ -26,7 +26,11 @@ QTime PlaylistGenerator::generateDaySonglist(QDate day, QTime startPlaylistAt, s
     //Declare important Variables.
     QTime playlistEndsAt = startPlaylistAt;
     qInfo() << "playlistEndsAt" << playlistEndsAt;
-    QTime time_NextID_OrPSA = QTime(startPlaylistAt.hour(), (startPlaylistAt.minute() - 1) + 15 - ((startPlaylistAt.minute() - 1) % 15)); //Midnight station ID and PSA will be handled by exception case below.
+
+    int nextIDPSA_Minute = (startPlaylistAt.minute() - 1) + 15 - ((startPlaylistAt.minute() - 1) % 15);
+    if (nextIDPSA_Minute == 60)
+        nextIDPSA_Minute = 0;
+    QTime time_NextID_OrPSA = QTime(startPlaylistAt.hour(), nextIDPSA_Minute); //Midnight station ID and PSA will be handled by exception case below.
     qInfo() << "time_NextID_OrPSA: " << time_NextID_OrPSA;
 
     bool doSpecialMidnightCase = false;
@@ -149,8 +153,10 @@ QTime PlaylistGenerator::generateDaySonglist(QDate day, QTime startPlaylistAt, s
         //Cleanup
         if (!isEvent)
         {
+            //If the next target is top of the hour, including midnight...
             if (nextTarget_TargetTime.minute() == 0 || nextTarget_TargetTime.minute() == 59)
             {
+                //Add an ID for this timeslot if possible, otherwise grab an untimed ID.
                 Track iDToAdd;
                 if(!sorted_IDs.at(time_NextID_OrPSA.hour()).length())
                 {
@@ -158,6 +164,7 @@ QTime PlaylistGenerator::generateDaySonglist(QDate day, QTime startPlaylistAt, s
                 } else {
                     iDToAdd = sorted_IDs.at(time_NextID_OrPSA.hour()).at(qrand() % sorted_IDs.at(time_NextID_OrPSA.hour()).size()); //Fetches a random ID from the vector holding IDs for the current hour.
                 }
+
                 qInfo() << "Adding ID: " << iDToAdd.path.fileName();
                 playlist->addMedia(iDToAdd.path);
                 listWidget->addItem(iDToAdd.path.fileName());
@@ -170,8 +177,12 @@ QTime PlaylistGenerator::generateDaySonglist(QDate day, QTime startPlaylistAt, s
                 keepGenerating = false;
             }
 
-            time_NextID_OrPSA = time_NextID_OrPSA.addSecs(900);
+            //Update the time_nextID_OrPSA variable.
+            if (!isEvent)
+                time_NextID_OrPSA = time_NextID_OrPSA.addSecs(900);
+            qInfo() << "time_NextID_OrPSA: " << time_NextID_OrPSA;
 
+            //Detect whether to do special midnight case for the next round.
             if (time_NextID_OrPSA.msecsSinceStartOfDay() == 0)
                 doSpecialMidnightCase = true;
         }
@@ -182,8 +193,6 @@ QTime PlaylistGenerator::generateDaySonglist(QDate day, QTime startPlaylistAt, s
         listWidget->addItem(nextTarget.path.fileName());
         playlistEndsAt = playlistEndsAt.addMSecs(nextTarget.length);
     }
-
-    //Special midnight case
 
 
     qInfo() << "Made the playlist!";

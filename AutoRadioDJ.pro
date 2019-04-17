@@ -31,14 +31,16 @@ SOURCES += \
         mainwindow.cpp \
     eventhandler.cpp \
     trackio.cpp \
-    playlistgenerator.cpp
+    playlistgenerator.cpp \
+    deselectableqlistwidget.cpp
 
 HEADERS += \
         mainwindow.h \
     radiodefinitions.h \
     eventhandler.h \
     trackio.h \
-    playlistgenerator.h
+    playlistgenerator.h \
+    deselectableqlistwidget.h
 
 FORMS += \
         mainwindow.ui

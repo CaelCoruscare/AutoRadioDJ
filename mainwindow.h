@@ -7,6 +7,8 @@
 #include <QMediaPlaylist>
 #include <QProcess>
 
+#include "deselectableqlistwidget.h"
+
 #include <radiodefinitions.h>
 class TrackIO;
 #include "trackio.h"
@@ -39,9 +41,9 @@ public:
     PlaylistGenerator *playlistGenerator;
 
     //Create listwidgets to go in appropriate scroll areas and pass them through to the TrackIO object.
-    QListWidget *listWidget_ID = new QListWidget;
-    QListWidget *listWidget_PSA = new QListWidget;
-    QListWidget *listWidget_Song = new QListWidget;
+    QListWidget *listWidget_ID = new DeselectableQListWidget;
+    QListWidget *listWidget_PSA = new DeselectableQListWidget;
+    QListWidget *listWidget_Song = new DeselectableQListWidget;
 
 
     //Player Stuff
@@ -58,6 +60,8 @@ private:
 
     QList<RadioEvent_Rule_OneShot> oneShots;
     QList<RadioEvent_Rule> repeaters;
+
+    QTime playlistEndTime;
 
 
 private slots:
@@ -78,12 +82,13 @@ private slots:
     void handleCheckbox_Event_Repeat_Daily(int state);
     void handleCheckbox_Event_Repeat_Weekly(int state);
 
-    //void handle_SongChange(int);
+    void handle_SongChange(int position); //If after 23:30, generate the next day's playlist.
+
     void handle_DurationChanged(qint64 duration);
     void handle_PositionChanged(qint64 pos);
 
-    void handleButton_TestEventListGeneration();
     void handleButton_TestPlaylistGeneration();
+
 
 signals:
 
