@@ -24,20 +24,19 @@ QVector<QVector<Track>> Radio::sorted_IDs(25, QVector<Track>());
 QVector<RadioEvent_Rule> Radio::eventList_Repeating;
 QVector<RadioEvent_Rule_OneShot> Radio::eventList_OneShots;
 
-
-QMediaPlayer* Radio::player = new QMediaPlayer;
-QMediaPlaylist* Radio::playlist = new QMediaPlaylist;
-
 int Radio::priority;
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
-    qInfo() << "player: " << player;
     implement();
 
     ui->setupUi(this);
+
+    player = new QMediaPlayer(this);
+    playlist = new QMediaPlaylist(player);
+    qInfo() << "player: " << player;
 
     player->setPlaylist(playlist);
     player->setVolume(70);
@@ -63,14 +62,14 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->scrollArea_Events_Repeating->setWidget(listWidget_Event_Repeating);
 
     //
-    QListWidget *listWidget_Upcoming = new QListWidget;
+    listWidget_Upcoming = new QListWidget;
 
     ui->scrollArea_Upcoming->setWidget(listWidget_Upcoming);
 
     //Create the TrackIO, EventHandler, and PlaylistGenerator objects, and hand them their listwidgets.
-    tIO = new TrackIO(this, listWidget_PSA, listWidget_Song, listWidget_ID, listWidget_Event_Repeating);
+    tIO = new TrackIO(this, listWidget_PSA, listWidget_Song, listWidget_ID, listWidget_Event_Repeating, player);
     eventHandler = new EventHandler(listWidget_Event_Repeating, listWidget_Event_Oneshot);
-    playlistGenerator = new PlaylistGenerator(listWidget_Upcoming);
+    playlistGenerator = new PlaylistGenerator(listWidget_Upcoming, playlist);
 
     //playlist = new QMediaPlaylist();
     //connect(playlist, SIGNAL(currentIndexChanged(int)), this, SLOT(handle_SongChange(int)));
@@ -161,16 +160,21 @@ void MainWindow::handleButton_Event_Add()
 }
 
 void MainWindow::handle_DurationChanged(qint64 duration){
-    {
-        ui->progressBar_Duration->setValue((position/1000));
-    }
 
-    ui->progressBar_Duration->setMaximum((duration/1000));
+    qInfo() << "Duration changing. Duration: " << duration;
+
+    ui->progressBar_Duration->setMaximum(duration);
+
+    durationTime = QTime(0,0).addMSecs(duration);
 }
 
 void MainWindow::handle_PositionChanged(qint64 pos)
 {
-    position = pos;
+    qInfo() << "Position changing. Pos: " << pos;
+
+    ui->progressBar_Duration->setValue(pos);
+    //auto prog = QTime(0,0,0,pos);
+    ui->progressBar_Duration->setFormat(QTime(0,0).addMSecs(pos).toString("m:ss") + " / " + durationTime.toString("m:ss"));
 }
 
 void MainWindow::handleButton_TestPlaylistGeneration(){
@@ -525,6 +529,7 @@ void MainWindow::handleSelected_Event_Oneshot(int currentRow){
 void MainWindow::handle_SongChange(int position){
 
     qInfo() << "songchange";
+    ui->label_TrackTitle->setText("Now Playing:\n" + listWidget_Upcoming->takeItem(0)->text());
 
     if(QDateTime::currentDateTime().time() > QTime(23,30))
     {

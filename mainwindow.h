@@ -35,25 +35,16 @@ public:
 
     Ui::MainWindow *ui;
 
-    //QListWidget *listWidget_PSA, *listWidget_Song, *listWidget_ID;
+    void implement();
+
+private:
     TrackIO *tIO;
     EventHandler *eventHandler;
     PlaylistGenerator *playlistGenerator;
 
-    //Create listwidgets to go in appropriate scroll areas and pass them through to the TrackIO object.
-    QListWidget *listWidget_ID = new DeselectableQListWidget;
-    QListWidget *listWidget_PSA = new DeselectableQListWidget;
-    QListWidget *listWidget_Song = new DeselectableQListWidget;
+    QMediaPlayer* player;
+    QMediaPlaylist* playlist;
 
-
-    //Player Stuff
-//    QMediaPlayer *player = new QMediaPlayer;
-//    QMediaPlaylist *playlist;
-    QMediaPlaylist *nextPlaylist;
-
-    void implement();
-
-private:
     qint64 position = 0;
     shared_ptr<Track> eventToAdd_Track = nullptr;
     std::unique_ptr<QList<RadioEvent_Instance>> testEventList;
@@ -62,6 +53,15 @@ private:
     QList<RadioEvent_Rule> repeaters;
 
     QTime playlistEndTime;
+
+    //Create listwidgets to go in appropriate scroll areas and pass them through to the TrackIO object.
+    QListWidget *listWidget_ID = new DeselectableQListWidget;
+    QListWidget *listWidget_PSA = new DeselectableQListWidget;
+    QListWidget *listWidget_Song = new DeselectableQListWidget;
+
+    QListWidget *listWidget_Upcoming;
+
+    QTime durationTime;
 
 
 private slots:

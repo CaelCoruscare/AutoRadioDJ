@@ -13,11 +13,25 @@ using namespace Radio;
 class PlaylistGenerator
 {
 public:
-    QListWidget *listWidget;
-
-    PlaylistGenerator(QListWidget *lW);
+    PlaylistGenerator(QListWidget *lW, QMediaPlaylist *p);
     QTime generateDaySonglist(QDate day, QTime previousDayPlaylist_EndsAt, std::unique_ptr<QList<RadioEvent_Instance> > eventList);
     Track getTrack(int maxLength, TrackType type = SONG);
+
+private:
+    QListWidget *listWidget;
+    QMediaPlaylist *playlist;
+
+    struct SongOption {
+        shared_ptr<Track> track;
+        int differenceFromAvg;
+        SongOption()
+        {}
+        SongOption(shared_ptr<Track> track, int differenceFromAvg)
+            : track(track)
+            , differenceFromAvg(differenceFromAvg)
+        {}
+    };
+
 public slots:
 };
 

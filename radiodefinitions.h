@@ -102,9 +102,6 @@ namespace Radio {
 
     extern QVector<RadioEvent_Rule> eventList_Repeating;
     extern QVector<RadioEvent_Rule_OneShot> eventList_OneShots;
-
-    extern QMediaPlayer *player;
-    extern QMediaPlaylist *playlist;
 }
 
 #endif // RADIODEFINITIONS_H

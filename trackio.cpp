@@ -7,12 +7,13 @@
 
 using namespace std;
 
-TrackIO::TrackIO(MainWindow *mW, QListWidget *lW_PSA, QListWidget *lW_Song, QListWidget *lW_ID, QListWidget *lW_Event)
+TrackIO::TrackIO(MainWindow *mW, QListWidget *lW_PSA, QListWidget *lW_Song, QListWidget *lW_ID, QListWidget *lW_Event, QMediaPlayer *p)
 {
     mainWindow = mW;
     listWidget_PSA = lW_PSA;
     listWidget_Song = lW_Song;
     listWidget_ID = lW_ID;
+    player = p;
 
     qRegisterMetaTypeStreamOperators<Track>("Track");
     qRegisterMetaTypeStreamOperators<RadioEvent_Rule>("RadioEvent_Rule");
@@ -58,7 +59,7 @@ QList<QUrl> TrackIO::open()
     fileDialog.setFileMode(QFileDialog::ExistingFiles);
     fileDialog.setAcceptMode(QFileDialog::AcceptOpen);
     fileDialog.setWindowTitle("Open Files");
-    QStringList supportedMimeTypes = Radio::player->supportedMimeTypes();
+    QStringList supportedMimeTypes = player->supportedMimeTypes();
     if (!supportedMimeTypes.isEmpty()) {
         supportedMimeTypes.append("audio/x-m3u"); // MP3 playlists
         fileDialog.setMimeTypeFilters(supportedMimeTypes);

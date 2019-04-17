@@ -1,8 +1,9 @@
 #include "playlistgenerator.h"
 
-PlaylistGenerator::PlaylistGenerator(QListWidget *lW)
+PlaylistGenerator::PlaylistGenerator(QListWidget *lW, QMediaPlaylist *p)
 {
     listWidget = lW;
+    playlist = p;
 }
 
 QTime PlaylistGenerator::generateDaySonglist(QDate day, QTime startPlaylistAt, std::unique_ptr<QList<RadioEvent_Instance>> eventList)
@@ -28,9 +29,15 @@ QTime PlaylistGenerator::generateDaySonglist(QDate day, QTime startPlaylistAt, s
     qInfo() << "playlistEndsAt" << playlistEndsAt;
 
     int nextIDPSA_Minute = (startPlaylistAt.minute() - 1) + 15 - ((startPlaylistAt.minute() - 1) % 15);
+    bool addHour = false;
     if (nextIDPSA_Minute == 60)
+    {
         nextIDPSA_Minute = 0;
+        addHour= true;
+    }
     QTime time_NextID_OrPSA = QTime(startPlaylistAt.hour(), nextIDPSA_Minute); //Midnight station ID and PSA will be handled by exception case below.
+    if (addHour)
+        time_NextID_OrPSA.addSecs(3600);
     qInfo() << "time_NextID_OrPSA: " << time_NextID_OrPSA;
 
     bool doSpecialMidnightCase = false;
@@ -94,7 +101,7 @@ QTime PlaylistGenerator::generateDaySonglist(QDate day, QTime startPlaylistAt, s
             qInfo() << "Adding Song: " << songToAdd.path.fileName();
             playlist->addMedia(songToAdd.path);
             //Add the song to the listwidget for upcoming songs.
-            listWidget->addItem(songToAdd.path.fileName());
+            listWidget->addItem(playlistEndsAt.toString() + " " + songToAdd.path.fileName());
 
             //Update the counter for when the playlist will end.
             playlistEndsAt = playlistEndsAt.addMSecs(songToAdd.length);
@@ -115,7 +122,7 @@ QTime PlaylistGenerator::generateDaySonglist(QDate day, QTime startPlaylistAt, s
 
             qInfo() << "(Midnight) Adding ID: " << iDToAdd.path.fileName();
             playlist->addMedia(iDToAdd.path);
-            listWidget->addItem(iDToAdd.path.fileName());
+            listWidget->addItem(playlistEndsAt.toString() + " " + iDToAdd.path.fileName());
             playlistEndsAt = playlistEndsAt.addMSecs(iDToAdd.length);
 
             int msecsOfExtraPSAs = 0;
@@ -127,7 +134,7 @@ QTime PlaylistGenerator::generateDaySonglist(QDate day, QTime startPlaylistAt, s
                 //Add the PSA to the playlist and update the counter for when the playlist will end.
                 qInfo() << "(Midnight) Adding PSA: " << pSAToAdd.path.fileName();
                 playlist->addMedia(pSAToAdd.path);
-                listWidget->addItem(pSAToAdd.path.fileName());
+                listWidget->addItem(playlistEndsAt.toString() + " " + pSAToAdd.path.fileName());
                 playlistEndsAt = playlistEndsAt.addMSecs(pSAToAdd.length);
                 msecsOfExtraPSAs += pSAToAdd.length;
             }
@@ -143,7 +150,7 @@ QTime PlaylistGenerator::generateDaySonglist(QDate day, QTime startPlaylistAt, s
             //Add the PSA to the playlist and update the counter for when the playlist will end.
             qInfo() << "Adding PSA: " << pSAToAdd.path.fileName();
             playlist->addMedia(pSAToAdd.path);
-            listWidget->addItem(pSAToAdd.path.fileName());
+            listWidget->addItem(playlistEndsAt.toString() + " " + pSAToAdd.path.fileName());
             playlistEndsAt = playlistEndsAt.addMSecs(pSAToAdd.length);
 
             //Update so the while loop can exit.
@@ -167,7 +174,7 @@ QTime PlaylistGenerator::generateDaySonglist(QDate day, QTime startPlaylistAt, s
 
                 qInfo() << "Adding ID: " << iDToAdd.path.fileName();
                 playlist->addMedia(iDToAdd.path);
-                listWidget->addItem(iDToAdd.path.fileName());
+                listWidget->addItem(playlistEndsAt.toString() + " " + iDToAdd.path.fileName());
                 playlistEndsAt = playlistEndsAt.addMSecs(iDToAdd.length);
             }
 
@@ -190,7 +197,7 @@ QTime PlaylistGenerator::generateDaySonglist(QDate day, QTime startPlaylistAt, s
         //Add the target track to the playlist.
         qInfo() << "Adding Target (Prob. PSA): " << nextTarget.path.fileName();
         playlist->addMedia(nextTarget.path);
-        listWidget->addItem(nextTarget.path.fileName());
+        listWidget->addItem(playlistEndsAt.toString() + " " + nextTarget.path.fileName());
         playlistEndsAt = playlistEndsAt.addMSecs(nextTarget.length);
     }
 
