@@ -23,10 +23,10 @@ namespace Radio {
 
     struct Track {
       QUrl path;
-      qint64 length; //In Milliseconds
+      int length; //In Milliseconds
       Track()
       {}
-      Track(QUrl path, qint64 length)
+      Track(QUrl path, int length)
           : path(path)
           , length(length)
       {}

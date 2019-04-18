@@ -70,6 +70,10 @@ std::unique_ptr<QList<RadioEvent_Instance>> EventHandler::generate_DailyEventSch
 
     //TODO: Remove all conflicts between events, or else do that in the import.
 
+    for (int i = 0; i < eventList->length(); i++)
+    {
+        qInfo() << "Time: " << eventList->at(i).time << "Track:" << eventList->at(i).track->path;
+    }
 
     return eventList;
 }
@@ -81,7 +85,6 @@ std::unique_ptr<QList<RadioEvent_Instance>> EventHandler::generate_DailyEventSch
 void EventHandler::addEventRule(shared_ptr<Track> track, QDateTime dateTime)
 {
     eventList_OneShots.append(RadioEvent_Rule_OneShot(track, dateTime));
-    qInfo() << "trackpathfilename: " << track->path.fileName();
     listWidgetOneshot->addItem(track->path.fileName());
 
 }
@@ -89,7 +92,6 @@ void EventHandler::addEventRule(shared_ptr<Track> track, QDateTime dateTime)
 void EventHandler::addEventRule(shared_ptr<Track> track, QList<QTime> times, QDate firstDate, QDate lastDate, QBitArray daysOfTheWeek)
 {
     eventList_Repeating.append(RadioEvent_Rule(track, times, firstDate, lastDate, daysOfTheWeek));
-    qInfo() << "trackpathfilename: " << track->path.fileName();
     listWidgetRepeating->addItem(track->path.fileName());
 }
 

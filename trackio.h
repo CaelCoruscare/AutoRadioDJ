@@ -17,7 +17,7 @@ class TrackIO
 {
 public:
     QListWidget *listWidget_PSA, *listWidget_Song, *listWidget_ID;
-    TrackIO(MainWindow *mW, QListWidget *lW_PSA, QListWidget *lW_Song, QListWidget *lW_ID, QListWidget *lW_Event, QMediaPlayer *player);
+    TrackIO(MainWindow *mW, QListWidget *lW_PSA, QListWidget *lW_Song, QListWidget *lW_ID, QMediaPlayer *player);
     MainWindow *mainWindow;
     QMediaPlayer *player;
     QList<QUrl> open();

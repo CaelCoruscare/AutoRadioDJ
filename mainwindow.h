@@ -63,6 +63,7 @@ private:
 
     QTime durationTime;
 
+    void clearEventOptions();
 
 private slots:
     void handleButton_BrowseForEventFile();

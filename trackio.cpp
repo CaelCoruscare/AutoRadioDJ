@@ -7,7 +7,7 @@
 
 using namespace std;
 
-TrackIO::TrackIO(MainWindow *mW, QListWidget *lW_PSA, QListWidget *lW_Song, QListWidget *lW_ID, QListWidget *lW_Event, QMediaPlayer *p)
+TrackIO::TrackIO(MainWindow *mW, QListWidget *lW_PSA, QListWidget *lW_Song, QListWidget *lW_ID, QMediaPlayer *p)
 {
     mainWindow = mW;
     listWidget_PSA = lW_PSA;
@@ -54,7 +54,6 @@ QDataStream &operator>>(QDataStream& stream, RadioEvent_Rule_OneShot& rule){
 
 QList<QUrl> TrackIO::open()
 {
-
     QFileDialog fileDialog(mainWindow);
     fileDialog.setFileMode(QFileDialog::ExistingFiles);
     fileDialog.setAcceptMode(QFileDialog::AcceptOpen);
@@ -79,7 +78,6 @@ void TrackIO::addToList(TrackType type, const QList<QUrl> &urls)
     if (urls.empty())
         return;
 
-    qInfo() << "hi " << urls[0].url();
     //Setup for adding the track to the proper track list and listwidget.
     QListWidget *listWidget;
     QVector<Track> *list;
@@ -88,8 +86,6 @@ void TrackIO::addToList(TrackType type, const QList<QUrl> &urls)
     QStringList arguments;
     arguments << "--Inform=Audio;%Duration%";
     QProcess lengthGetter;
-
-    qInfo() << "SortedPSAs Length: " << sorted_PSAs.length();
 
     //More setup for adding the track to the proper track list and listwidget.
     switch(type)
@@ -105,30 +101,28 @@ void TrackIO::addToList(TrackType type, const QList<QUrl> &urls)
         case SONG  : listWidget = listWidget_Song;
                      list = &sorted_Songs.first();
                      break;
+
+        case EVENT : qInfo() << "Event should not be pased through here";
+                     break;
     }
 
     for(auto &url: urls)
     {
-
-
         //Add the filename to the listWidget.
         listWidget->addItem(url.fileName());
 
         //Set up to read length
         arguments << url.path();
-        qInfo() << "arguments: " << arguments;
-        qInfo() << "path: " << url.path();
         //Read the length of the music file
         lengthGetter.start("mediainfo", arguments);
         lengthGetter.waitForFinished(); // sets current thread to sleep and waits for pingProcess end
         QString output(lengthGetter.readAllStandardOutput());
-        qInfo() << "Length: " << output << " | " << url.path();
+
         //Clear out the filename argument so arguments can be used again in the next loop.
         arguments.pop_back();
 
         //Fill the track struct and append it to the proper track list.
         auto t = Track(url, output.toLongLong());
-        qInfo() << "t: " << t.path << " " << t.length;
 
         //Handle ID Special Case
         if (type == ID)
@@ -137,12 +131,10 @@ void TrackIO::addToList(TrackType type, const QList<QUrl> &urls)
             int hour = url.fileName().mid(0,2).toInt(&isNumber);
             if (!isNumber)
             {
-                qInfo() << "No number at the front of this ID: " << url.fileName();
                 list->append(t);
             }
             else if (hour > 24 || hour < 0)
             {
-                qInfo() << "Wrong number at the front of this ID!: " << url.fileName();
                 list->append(t);
             }
             else {
@@ -153,78 +145,5 @@ void TrackIO::addToList(TrackType type, const QList<QUrl> &urls)
         else {
             list->append(t);
         }
-
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-//Unimplmeneted example code.
-/*void MainWindow::saveToFile()
-{
-    QString fileName = QFileDialog::getSaveFileName(this,
-        tr("Save Address Book"), "",
-        tr("Address Book (*.abk);;All Files (*)"));
-
-    if (fileName.isEmpty())
-        return;
-    else {
-        QFile file(fileName);
-        if (!file.open(QIODevice::WriteOnly)) {
-            QMessageBox::information(this, tr("Unable to open file"),
-                file.errorString());
-            return;
-        }
-
-        QDataStream out(&file);
-        out.setVersion(QDataStream::Qt_4_5);
-        out << fullList_PSA;
-    }
-}
-
-
-//Unimplemeneted example code.
-void MainWindow::loadFromFile()
-{
-    QString fileName = QFileDialog::getOpenFileName(this,
-        tr("Open Address Book"), "",
-        tr("Address Book (*.abk);;All Files (*)"));
-
-    if (fileName.isEmpty())
-        return;
-    else {
-
-        QFile file(fileName);
-
-        if (!file.open(QIODevice::ReadOnly)) {
-            QMessageBox::information(this, tr("Unable to open file"),
-                file.errorString());
-            return;
-        }
-
-        QDataStream in(&file);
-        in.setVersion(QDataStream::Qt_4_5);
-        fullList_PSA.clear();   // clear existing contacts
-        in >> fullList_PSA;
-
-        if (fullList_PSA.isEmpty()) {
-            QMessageBox::information(this, tr("No contacts in file"),
-                tr("The file you are attempting to open contains no contacts."));
-        } else {
-            QMap<QString, QString>::iterator i = fullList_PSA.begin();
-            nameLine->setText(i.key());
-            addressText->setText(i.value());
-        }
-    }
-
-    //updateInterface(NavigationMode);
-}*/

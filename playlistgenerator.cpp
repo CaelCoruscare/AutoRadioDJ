@@ -15,18 +15,8 @@ QTime PlaylistGenerator::generateDaySonglist(QDate day, QTime startPlaylistAt, s
         return QTime();
     }
 
-    for(int i = 0; i < 24; i++)
-    {
-        if(!sorted_IDs.at(i).length())
-        {
-            qInfo() << "Oops, sorted_IDs is lacking an ID for the hour: " << i;
-            //return QTime();
-        }
-    }
-
     //Declare important Variables.
     QTime playlistEndsAt = startPlaylistAt;
-    qInfo() << "playlistEndsAt" << playlistEndsAt;
 
     int nextIDPSA_Minute = (startPlaylistAt.minute() - 1) + 15 - ((startPlaylistAt.minute() - 1) % 15);
     bool addHour = false;
@@ -37,14 +27,14 @@ QTime PlaylistGenerator::generateDaySonglist(QDate day, QTime startPlaylistAt, s
     }
     QTime time_NextID_OrPSA = QTime(startPlaylistAt.hour(), nextIDPSA_Minute); //Midnight station ID and PSA will be handled by exception case below.
     if (addHour)
-        time_NextID_OrPSA.addSecs(3600);
-    qInfo() << "time_NextID_OrPSA: " << time_NextID_OrPSA;
+        time_NextID_OrPSA = time_NextID_OrPSA.addSecs(3600);
 
     bool doSpecialMidnightCase = false;
     bool keepGenerating = true;
 
     while(keepGenerating)
     {
+        qInfo() << "loop start";
         QTime nextTarget_TargetTime;
         Track nextTarget;
         bool isEvent;
@@ -78,13 +68,8 @@ QTime PlaylistGenerator::generateDaySonglist(QDate day, QTime startPlaylistAt, s
         {
             //Set Next Target Variables
             nextTarget_TargetTime = (!doSpecialMidnightCase) ? time_NextID_OrPSA : QTime(23,59,59,59);
-
-            qInfo() << "nextTarget_TargetTime: " << nextTarget_TargetTime;
-
             nextTarget = getTrack(300000, PSA); //Get the least played PSA that is under 5 minutes.
-
             isEvent = false;
-                    //sorted_IDs.at(time_NextID_OrPSA.hour()).at(qrand() % sorted_IDs.at(time_NextID_OrPSA.hour()).size()); //Fetches a random ID from the vector holding IDs for the current hour.
         }
 
         //Define the target window.
@@ -92,13 +77,13 @@ QTime PlaylistGenerator::generateDaySonglist(QDate day, QTime startPlaylistAt, s
 
         //Build until target window is reached.
         int timeUntilWindowEnd = nextTarget_TargetTime.msecsSinceStartOfDay() - playlistEndsAt.msecsSinceStartOfDay() + 30000;
-        while (playlistEndsAt < targetWindow_Start)
+        while (playlistEndsAt < targetWindow_Start && (!doSpecialMidnightCase || playlistEndsAt > QTime(5,5)))
         {
             //Get a Song that won't end after the target window.
             Track songToAdd = getTrack(timeUntilWindowEnd);
 
+            qInfo() << "time: " << playlistEndsAt << "File: " << songToAdd.path;
             //Add the Song to the playlist.
-            qInfo() << "Adding Song: " << songToAdd.path.fileName();
             playlist->addMedia(songToAdd.path);
             //Add the song to the listwidget for upcoming songs.
             listWidget->addItem(playlistEndsAt.toString() + " " + songToAdd.path.fileName());
@@ -119,11 +104,10 @@ QTime PlaylistGenerator::generateDaySonglist(QDate day, QTime startPlaylistAt, s
             } else {
                 iDToAdd = sorted_IDs.at(time_NextID_OrPSA.hour()).at(qrand() % sorted_IDs.at(time_NextID_OrPSA.hour()).size()); //Fetches a random ID from the vector holding IDs for the current hour.
             }
-
-            qInfo() << "(Midnight) Adding ID: " << iDToAdd.path.fileName();
+            qInfo() << "time: " << playlistEndsAt << "File: " << iDToAdd.path;
             playlist->addMedia(iDToAdd.path);
             listWidget->addItem(playlistEndsAt.toString() + " " + iDToAdd.path.fileName());
-            playlistEndsAt = playlistEndsAt.addMSecs(iDToAdd.length);
+            playlistEndsAt = playlistEndsAt.addMSecs(static_cast<int>(iDToAdd.length));
 
             int msecsOfExtraPSAs = 0;
             while(msecsOfExtraPSAs < 60000)
@@ -132,26 +116,26 @@ QTime PlaylistGenerator::generateDaySonglist(QDate day, QTime startPlaylistAt, s
                 Track pSAToAdd = getTrack(90000, PSA);
 
                 //Add the PSA to the playlist and update the counter for when the playlist will end.
-                qInfo() << "(Midnight) Adding PSA: " << pSAToAdd.path.fileName();
+                qInfo() << "time: " << playlistEndsAt << "File: " << pSAToAdd.path;
                 playlist->addMedia(pSAToAdd.path);
                 listWidget->addItem(playlistEndsAt.toString() + " " + pSAToAdd.path.fileName());
-                playlistEndsAt = playlistEndsAt.addMSecs(pSAToAdd.length);
+                playlistEndsAt = playlistEndsAt.addMSecs(static_cast<int>(pSAToAdd.length));
                 msecsOfExtraPSAs += pSAToAdd.length;
             }
 
         }
 
         //If there is more than 30 seconds until the event, PSA, or ID, play a tiny PSA.
-        while (timeUntilWindowEnd > 60000)
+        while (!doSpecialMidnightCase && timeUntilWindowEnd > 60000)
         {
             //Get the PSA.
             Track pSAToAdd = getTrack(60000, PSA);
 
             //Add the PSA to the playlist and update the counter for when the playlist will end.
-            qInfo() << "Adding PSA: " << pSAToAdd.path.fileName();
+            qInfo() << "time: " << playlistEndsAt << "Tiny PSA File: " << pSAToAdd.path;
             playlist->addMedia(pSAToAdd.path);
             listWidget->addItem(playlistEndsAt.toString() + " " + pSAToAdd.path.fileName());
-            playlistEndsAt = playlistEndsAt.addMSecs(pSAToAdd.length);
+            playlistEndsAt = playlistEndsAt.addMSecs(static_cast<int>(pSAToAdd.length));
 
             //Update so the while loop can exit.
             timeUntilWindowEnd = nextTarget_TargetTime.msecsSinceStartOfDay() - playlistEndsAt.msecsSinceStartOfDay() + 30000;
@@ -161,7 +145,7 @@ QTime PlaylistGenerator::generateDaySonglist(QDate day, QTime startPlaylistAt, s
         if (!isEvent)
         {
             //If the next target is top of the hour, including midnight...
-            if (nextTarget_TargetTime.minute() == 0 || nextTarget_TargetTime.minute() == 59)
+            if (nextTarget_TargetTime.minute() == 0)
             {
                 //Add an ID for this timeslot if possible, otherwise grab an untimed ID.
                 Track iDToAdd;
@@ -171,11 +155,10 @@ QTime PlaylistGenerator::generateDaySonglist(QDate day, QTime startPlaylistAt, s
                 } else {
                     iDToAdd = sorted_IDs.at(time_NextID_OrPSA.hour()).at(qrand() % sorted_IDs.at(time_NextID_OrPSA.hour()).size()); //Fetches a random ID from the vector holding IDs for the current hour.
                 }
-
-                qInfo() << "Adding ID: " << iDToAdd.path.fileName();
+                qInfo() << "time: " << playlistEndsAt << "File: " << iDToAdd.path;
                 playlist->addMedia(iDToAdd.path);
                 listWidget->addItem(playlistEndsAt.toString() + " " + iDToAdd.path.fileName());
-                playlistEndsAt = playlistEndsAt.addMSecs(iDToAdd.length);
+                playlistEndsAt = playlistEndsAt.addMSecs(static_cast<int>(iDToAdd.length));
             }
 
             //Dealing with the midnight case.
@@ -187,7 +170,6 @@ QTime PlaylistGenerator::generateDaySonglist(QDate day, QTime startPlaylistAt, s
             //Update the time_nextID_OrPSA variable.
             if (!isEvent)
                 time_NextID_OrPSA = time_NextID_OrPSA.addSecs(900);
-            qInfo() << "time_NextID_OrPSA: " << time_NextID_OrPSA;
 
             //Detect whether to do special midnight case for the next round.
             if (time_NextID_OrPSA.msecsSinceStartOfDay() == 0)
@@ -195,10 +177,10 @@ QTime PlaylistGenerator::generateDaySonglist(QDate day, QTime startPlaylistAt, s
         }
 
         //Add the target track to the playlist.
-        qInfo() << "Adding Target (Prob. PSA): " << nextTarget.path.fileName();
+        qInfo() << "time: " << playlistEndsAt << "File: " << nextTarget.path.fileName();
         playlist->addMedia(nextTarget.path);
         listWidget->addItem(playlistEndsAt.toString() + " " + nextTarget.path.fileName());
-        playlistEndsAt = playlistEndsAt.addMSecs(nextTarget.length);
+        playlistEndsAt = playlistEndsAt.addMSecs(static_cast<int>(nextTarget.length));
     }
 
 
