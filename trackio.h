@@ -16,8 +16,7 @@ using namespace Radio;
 class TrackIO
 {
 public:
-    QListWidget *listWidget_PSA, *listWidget_Song, *listWidget_ID;
-    TrackIO(MainWindow *mW, QListWidget *lW_PSA, QListWidget *lW_Song, QListWidget *lW_ID, QMediaPlayer *player);
+    TrackIO(MainWindow *mW, QListWidget *lW_PSA, QListWidget *lW_Song, QListWidget *lW_ID, QMediaPlayer *p, QListWidget *lW_EO, QListWidget *lW_ER);
     MainWindow *mainWindow;
     QMediaPlayer *player;
     QList<QUrl> open();
@@ -32,6 +31,7 @@ public:
     //When loading song, reject if it is more than 15 minutes.
 
 private:
+    QListWidget *listWidget_PSA, *listWidget_Song, *listWidget_ID, *listWidget_EventOneshot, *listWidget_EventRepeating;
     void fillList(QVector<QVector<Track> > &sorted, QListWidget &widget);
 };
 

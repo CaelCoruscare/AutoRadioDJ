@@ -98,7 +98,7 @@ private slots:
 
     void handleButton_TestPlaylistGeneration();
 
-
+    void handle_PlayerError(QMediaPlayer::Error error);
 signals:
 
 };

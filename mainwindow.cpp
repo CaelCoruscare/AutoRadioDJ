@@ -100,6 +100,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(listWidget_Event_Oneshot, SIGNAL(currentRowChanged(int)), this, SLOT(handleSelected_Event_Oneshot(int)));
 
     connect(playlist, SIGNAL(currentIndexChanged(int)), this, SLOT(handle_SongChange(int)));
+    connect(player, SIGNAL(error(QMediaPlayer::Error)), this, SLOT(handle_PlayerError(QMediaPlayer::Error)));
+
 }
 
 void MainWindow::listWidgetSet(QListWidget *l, QPushButton *b){
@@ -259,6 +261,10 @@ void MainWindow::handleButton_PSA_Delete(){
     }
 
     qDeleteAll(listWidget_PSA->selectedItems());
+
+    if(!sorted_PSAs.isEmpty())
+    while(!sorted_PSAs.isEmpty() && sorted_PSAs.first().isEmpty())
+        sorted_PSAs.removeFirst();
 }
 
 void MainWindow::handleButton_ID_Delete(){
@@ -315,6 +321,12 @@ void MainWindow::handleButton_Song_Delete(){
     }
 
     qDeleteAll(listWidget_Song->selectedItems());
+
+    if(!sorted_Songs.isEmpty())
+    {
+        while(!sorted_Songs.isEmpty() && sorted_Songs.first().isEmpty())
+            sorted_Songs.removeFirst();
+    }
 }
 
 void MainWindow::handleCheckbox_Event_Repeat_Daily(int state){
@@ -508,6 +520,79 @@ void MainWindow::handle_SongChange(int position){
         QDate tomorrow = QDate::currentDate().addDays(1);
         playlistEndTime = playlistGenerator->generateDaySonglist(tomorrow, playlistEndTime, eventHandler->generate_DailyEventSchedule(tomorrow));
     }
+}
+
+void MainWindow::handle_PlayerError(QMediaPlayer::Error error){
+
+    QMessageBox msgBox;
+    msgBox.setText("The Player has run into an error:\n" + player->errorString() + " While playing the song: " + playlist->currentMedia().canonicalUrl().toString() + "\nThe AutoRadioDJ will now create a new daily playlist.");
+    msgBox.setModal(false);
+    msgBox.exec();
+    //qInfo() << "The Player has run into an error:\n" + player->errorString() + " While playing the song: " + playlist->currentMedia().canonicalUrl().toString() + "\nThe AutoRadioDJ will now create a new daily playlist.";
+
+
+    //Search sorted_PSAs until a matching file is found.
+    bool found = false;
+    for (auto &list: sorted_IDs)
+    {
+        for (int i = 0; i < list.length(); i++)
+        {
+            if (!playlist->currentMedia().canonicalUrl().fileName().compare(list.at(i).path.fileName()))
+            {
+                list.removeAt(i);
+                found = true;
+                break;
+            }
+        }
+
+        if (found)
+            break;
+    }
+
+    found = false;
+    for (auto &list: sorted_PSAs)
+    {
+        for (int i = 0; i < list.length(); i++)
+        {
+            if (!playlist->currentMedia().canonicalUrl().fileName().compare(list.at(i).path.fileName()))
+            {
+                list.removeAt(i);
+                found = true;
+                break;
+            }
+        }
+
+        if (found)
+            break;
+    }
+
+    found = false;
+    for (auto &list: sorted_Songs)
+    {
+        for (int i = 0; i < list.length(); i++)
+        {
+            if (!playlist->currentMedia().canonicalUrl().fileName().compare(list.at(i).path.fileName()))
+            {
+                list.removeAt(i);
+                found = true;
+                break;
+            }
+        }
+
+        if (found)
+            break;
+    }
+
+    if(!sorted_PSAs.isEmpty())
+    while(!sorted_PSAs.isEmpty() && sorted_PSAs.first().isEmpty())
+        sorted_PSAs.removeFirst();
+
+    if(!sorted_Songs.isEmpty())
+    while(!sorted_Songs.isEmpty() && sorted_Songs.first().isEmpty())
+        sorted_Songs.removeFirst();
+
+
+    playlistGenerator->generateDaySonglist(QDate::currentDate(), QTime::currentTime(),eventHandler->generate_DailyEventSchedule(QDate::currentDate(), QTime::currentTime()));
 }
 
 MainWindow::~MainWindow(){

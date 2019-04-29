@@ -9,12 +9,14 @@
 
 using namespace std;
 
-TrackIO::TrackIO(MainWindow *mW, QListWidget *lW_PSA, QListWidget *lW_Song, QListWidget *lW_ID, QMediaPlayer *p){
+TrackIO::TrackIO(MainWindow *mW, QListWidget *lW_PSA, QListWidget *lW_Song, QListWidget *lW_ID, QMediaPlayer *p, QListWidget *lW_EO, QListWidget *lW_ER){
 
     mainWindow = mW;
     listWidget_PSA = lW_PSA;
     listWidget_Song = lW_Song;
     listWidget_ID = lW_ID;
+    listWidget_EventOneshot = lW_EO;
+    listWidget_EventRepeating = lW_ER;
     player = p;
 
     qRegisterMetaTypeStreamOperators<Track>("Track");
@@ -161,16 +163,20 @@ void TrackIO::addToList(TrackType type, const QList<QUrl> &urls){
     switch(type)
     {
         case PSA  : listWidget = listWidget_PSA;
+                    if(sorted_PSAs.empty())
+                        sorted_PSAs.append(QVector<Track>());
                     list = &sorted_PSAs.first();
                     break;
 
-        case ID  : listWidget = listWidget_ID;
-                   list = &sorted_IDs.last(); //The last list of IDs holds only IDs that aren't specific to a time.
-                   break;
+        case ID  :  listWidget = listWidget_ID;
+                    list = &sorted_IDs.last(); //The last list of IDs holds only IDs that aren't specific to a time.
+                    break;
 
-        case SONG  : listWidget = listWidget_Song;
-                     list = &sorted_Songs.first();
-                     break;
+        case SONG  :    listWidget = listWidget_Song;
+                        if(sorted_Songs.empty())
+                            sorted_Songs.append(QVector<Track>());
+                        list = &sorted_Songs.first();
+                        break;
 
         case EVENT : qInfo() << "Event should not be pased through here";
                     return;
