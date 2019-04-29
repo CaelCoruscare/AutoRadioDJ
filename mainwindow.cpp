@@ -47,6 +47,10 @@ MainWindow::MainWindow(QWidget *parent) :
     listWidget_PSA->setSelectionMode(QAbstractItemView::ExtendedSelection);
     listWidget_Song->setSelectionMode(QAbstractItemView::ExtendedSelection);
 
+    listWidgetSet(listWidget_ID, ui->pushButton_ID_Delete);
+    listWidgetSet(listWidget_PSA, ui->pushButton_PSA_Delete);
+    listWidgetSet(listWidget_Song, ui->pushButton_Song_Delete);
+
     ui->scrollArea_IDs->setWidget(listWidget_ID);
     ui->scrollArea_PSAs->setWidget(listWidget_PSA);
 
@@ -68,6 +72,8 @@ MainWindow::MainWindow(QWidget *parent) :
     eventHandler = new EventHandler(listWidget_Event_Repeating, listWidget_Event_Oneshot);
     playlistGenerator = new PlaylistGenerator(listWidget_Upcoming, playlist);
 
+    tIO->loadFromFile();
+
     //playlist = new QMediaPlaylist();
     //connect(playlist, SIGNAL(currentIndexChanged(int)), this, SLOT(handle_SongChange(int)));
     //Testing button clicks
@@ -83,6 +89,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(player, SIGNAL(positionChanged(qint64)), this, SLOT(handle_PositionChanged(qint64)));
 
     connect(ui->pushButton_PlaylistTest, SIGNAL(released()), this, SLOT(handleButton_TestPlaylistGeneration()));
+    connect(ui->pushButton_TestSaving, SIGNAL(released()), this, SLOT(handleButton_TestSaving()));
 
     connect(ui->pushButton_Event_FileBrowse, SIGNAL(released()), this, SLOT(handleButton_BrowseForEventFile()));
     connect(ui->pushButton_AddEvent, SIGNAL(released()), this, SLOT(handleButton_Event_Add()));
@@ -96,8 +103,20 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(playlist, SIGNAL(currentIndexChanged(int)), this, SLOT(handle_SongChange(int)));
 }
 
+void MainWindow::listWidgetSet(QListWidget *l, QPushButton *b){
+
+    DeselectableQListWidget *listWidget = static_cast<DeselectableQListWidget*>(l);
+    listWidget->deleteButton = b;
+}
+
 void MainWindow::implement(){
     //Deprecated
+}
+
+void MainWindow::handleButton_TestSaving(){
+
+    tIO->saveToFile();
+    //tIO->loadFromFile();
 }
 
 void MainWindow::handleButton_Event_Add(){
@@ -493,6 +512,7 @@ void MainWindow::handle_SongChange(int position){
 }
 
 MainWindow::~MainWindow(){
+    tIO->saveToFile();
     delete ui;
 }
 

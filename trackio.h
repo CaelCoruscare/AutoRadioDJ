@@ -32,6 +32,7 @@ public:
     //When loading song, reject if it is more than 15 minutes.
 
 private:
+    void fillList(QVector<QVector<Track> > &sorted, QListWidget &widget);
 };
 
 #endif // TRACKIO_H

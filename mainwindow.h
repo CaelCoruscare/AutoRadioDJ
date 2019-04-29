@@ -37,6 +37,7 @@ public:
 
     void implement();
 
+public slots:
 private:
     TrackIO *tIO;
     EventHandler *eventHandler;
@@ -59,13 +60,20 @@ private:
     QListWidget *listWidget_PSA = new DeselectableQListWidget;
     QListWidget *listWidget_Song = new DeselectableQListWidget;
 
+    //listWidget_ID
+
+
     QListWidget *listWidget_Upcoming;
 
     QTime durationTime;
 
     void clearEventOptions();
 
+    void listWidgetSet(QListWidget *l, QPushButton *b);
+
+
 private slots:
+    void handleButton_TestSaving();
     void handleButton_BrowseForEventFile();
 
     void handleButton_PSA_Add();

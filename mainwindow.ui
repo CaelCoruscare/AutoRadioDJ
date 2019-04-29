@@ -63,6 +63,20 @@
            </property>
           </widget>
          </item>
+         <item>
+          <widget class="QPushButton" name="pushButtonFuckYou">
+           <property name="text">
+            <string>PushButton</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pushButton_TestSaving">
+           <property name="text">
+            <string>TestSaving</string>
+           </property>
+          </widget>
+         </item>
         </layout>
        </widget>
       </item>
@@ -83,7 +97,7 @@
               <x>0</x>
               <y>0</y>
               <width>254</width>
-              <height>441</height>
+              <height>379</height>
              </rect>
             </property>
            </widget>
