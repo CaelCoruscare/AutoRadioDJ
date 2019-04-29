@@ -67,7 +67,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->scrollArea_Upcoming->setWidget(listWidget_Upcoming);
 
     //Create the TrackIO, EventHandler, and PlaylistGenerator objects, and hand them their listwidgets.
-    tIO = new TrackIO(this, listWidget_PSA, listWidget_Song, listWidget_ID, player);
+    tIO = new TrackIO(this, listWidget_PSA, listWidget_Song, listWidget_ID, player, listWidget_Event_Oneshot, listWidget_Event_Repeating);
     eventHandler = new EventHandler(listWidget_Event_Repeating, listWidget_Event_Oneshot);
     playlistGenerator = new PlaylistGenerator(listWidget_Upcoming, playlist);
 
@@ -597,6 +597,11 @@ void MainWindow::handle_PlayerError(QMediaPlayer::Error error){
 
 MainWindow::~MainWindow(){
     tIO->saveToFile();
+
+    QMessageBox msgBox;
+    msgBox.setText("The Player has run into an error:\n" + player->errorString() + " While playing the song: " + playlist->currentMedia().canonicalUrl().toString() + "\nThe AutoRadioDJ will now create a new daily playlist.");
+    msgBox.exec();
+
     delete ui;
 }
 
