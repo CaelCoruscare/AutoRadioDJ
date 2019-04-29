@@ -53,7 +53,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->scrollArea_IDs->setWidget(listWidget_ID);
     ui->scrollArea_PSAs->setWidget(listWidget_PSA);
-
     ui->scrollArea_Songs->setWidget(listWidget_Song);
 
     //Create listWidget to display Events and pass it through to the EventHandler object.
@@ -270,7 +269,7 @@ void MainWindow::handleButton_ID_Delete(){
     {
         //Search sorted_IDs until a matching file is found.
         bool found = false;
-        for (auto list: sorted_IDs)
+        for (auto &list: sorted_IDs)
         {
             for (int i = 0; i < list.length(); i++)
             {
@@ -298,7 +297,7 @@ void MainWindow::handleButton_Song_Delete(){
     {
         //Search sorted_Songs until a matching file is found.
         bool found = false;
-        for (auto list: sorted_Songs)
+        for (auto &list: sorted_Songs)
         {
             for (int i = 0; i < list.length(); i++)
             {
