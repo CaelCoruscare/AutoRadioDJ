@@ -524,6 +524,11 @@ void MainWindow::handle_SongChange(int position){
 
 void MainWindow::handle_PlayerError(QMediaPlayer::Error error){
 
+    if(error != QMediaPlayer::Error::ResourceError)
+        return;
+
+    qInfo() << error << " | " << player->errorString();
+
     QMessageBox msgBox;
     msgBox.setText("The Player has run into an error:\n" + player->errorString() + " While playing the song: " + playlist->currentMedia().canonicalUrl().toString() + "\nThe AutoRadioDJ will now create a new daily playlist.");
     msgBox.setModal(false);
@@ -599,7 +604,7 @@ MainWindow::~MainWindow(){
     tIO->saveToFile();
 
     QMessageBox msgBox;
-    msgBox.setText("The Player has run into an error:\n" + player->errorString() + " While playing the song: " + playlist->currentMedia().canonicalUrl().toString() + "\nThe AutoRadioDJ will now create a new daily playlist.");
+    msgBox.setText("This program should always be running. Please reopen it.");
     msgBox.exec();
 
     delete ui;
