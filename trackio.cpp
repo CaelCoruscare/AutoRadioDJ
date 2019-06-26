@@ -186,7 +186,17 @@ void TrackIO::addToList(TrackType type, const QList<QUrl> &urls){
     {
 
         //Set up to read length
+#ifdef __linux__
+        //linux code goes here
         arguments << url.path();
+#elif _WIN32
+        // windows code goes here
+        arguments << url.path().remove(0,1);
+#else
+
+#endif
+        qInfo() << arguments;
+        qInfo() << url.path();
         //Read the length of the music file
         lengthGetter.start("mediainfo", arguments);
         lengthGetter.waitForFinished(); // sets current thread to sleep and waits for pingProcess end
@@ -196,6 +206,7 @@ void TrackIO::addToList(TrackType type, const QList<QUrl> &urls){
         arguments.pop_back();
 
         //If length 0 or > 15.30 don't import
+        qInfo() << output;
         auto length =  output.toInt();
         if(length == 0)
         {
